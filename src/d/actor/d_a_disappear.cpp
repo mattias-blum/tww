@@ -76,26 +76,27 @@ void set_disappear(disappear_class* i_this, float scale) {
         case 0xB:
         case 0xC:
         case 0xD:
-            dComIfGp_particle_set(0x14, &i_this->current.pos, NULL, &particleScale);
+            dComIfGp_particle_set(dPa_name::ID_COMMON_0014, &i_this->current.pos, NULL, &particleScale);
+            // Fall-through
         case 0x3:
-            dComIfGp_particle_set(0x13, &i_this->current.pos, NULL, &particleScale);
-            dComIfGp_particle_setStripes(0x15, &i_this->current.pos, NULL, &particleScale, 0xFF, 0x96);
-            dComIfGp_particle_set(0x16, &i_this->current.pos, NULL, &particleScale);
+            dComIfGp_particle_set(dPa_name::ID_COMMON_0013, &i_this->current.pos, NULL, &particleScale);
+            dComIfGp_particle_setStripes(dPa_name::ID_COMMON_0015, &i_this->current.pos, NULL, &particleScale, 0xFF, 0x96);
+            dComIfGp_particle_set(dPa_name::ID_COMMON_0016, &i_this->current.pos, NULL, &particleScale);
             break;
         case 0x1:
-            dComIfGp_particle_set(0x13, &i_this->current.pos, NULL, &particleScale);
-            dComIfGp_particle_set(0x16, &i_this->current.pos, NULL, &particleScale);
+            dComIfGp_particle_set(dPa_name::ID_COMMON_0013, &i_this->current.pos, NULL, &particleScale);
+            dComIfGp_particle_set(dPa_name::ID_COMMON_0016, &i_this->current.pos, NULL, &particleScale);
             break;
         case 0x4:
-            dComIfGp_particle_set(0x043C, &i_this->current.pos);
-            dComIfGp_particle_set(0x043D, &i_this->current.pos);
-            dComIfGp_particle_set(0x043E, &i_this->current.pos);
+            dComIfGp_particle_set(dPa_name::ID_COMMON_043C, &i_this->current.pos);
+            dComIfGp_particle_set(dPa_name::ID_COMMON_043D, &i_this->current.pos);
+            dComIfGp_particle_set(dPa_name::ID_COMMON_043E, &i_this->current.pos);
             break;
     }
 }
 
 /* 800E7DBC-800E7E60       .text daDisappear_Create__FP10fopAc_ac_c */
-static s32 daDisappear_Create(fopAc_ac_c* i_this) {
+static cPhs_State daDisappear_Create(fopAc_ac_c* i_this) {
     disappear_class* dis = static_cast<disappear_class*>(i_this);
 
     fopAcM_SetupActor(dis, disappear_class);

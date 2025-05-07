@@ -142,7 +142,7 @@ void dKyr_kamome_move() {
                     pWind->mKamomeEff[i].mAngleYSpeed = cM_rndFX(1.0f);
                     pWind->mKamomeEff[i].mScale = 0.0f;
                     pWind->mKamomeEff[i].mTimer = 300.0f + cM_rndF(180.0f);
-                    pWind->mKamomeEff[i].mpEmitter = dComIfGp_particle_set(0x429, &pWind->mKamomeEff[i].mPos);
+                    pWind->mKamomeEff[i].mpEmitter = dComIfGp_particle_set(dPa_name::ID_COMMON_0429, &pWind->mKamomeEff[i].mPos);
                     pWind->mKamomeEff[i].mStatus++;
                 } else {
                     pWind->mKamomeEff[i].mTimer--;
@@ -366,7 +366,7 @@ void dKyr_wind_move() {
                 pos.y = windEff.mBasePos.y + windEff.mPos.y;
                 pos.z = windEff.mBasePos.z + windEff.mPos.z;
 
-                windEff.mpEmitter = dComIfGp_particle_set(0x31, &pos);
+                windEff.mpEmitter = dComIfGp_particle_set(dPa_name::ID_COMMON_0031, &pos);
                 if (windEff.mpEmitter != NULL) {
                     windEff.mpEmitter->setGlobalAlpha(0);
                     windEff.mpEmitter->setGlobalScale(JGeometry::TVec3<f32>(fVar23, fVar23, fVar23));
@@ -426,7 +426,7 @@ void dKyr_wind_move() {
 
                 // so much stuff is missing in here
 
-                fVar14 = fVar27 * (i / 15);
+                fVar14 = fVar27 * (s32)(i / 30); 
                 f32 distance = pos.getSquareDistance(pCamera->mLookat.mEye) / 200.0f;
                 if (distance > 1.0f) {
                     distance = 1.0f;
@@ -559,14 +559,14 @@ void dKyr_sun_move() {
         pSunPkt->field_0x3c--;
     pSunPkt->field_0x3d = false;
 
-    if (dKy_getEnvlight().mCurTime > 95.7f && dKy_getEnvlight().mCurTime < 292.5f) {
+    if (dKy_getEnvlight().mCurTime > 97.5f && dKy_getEnvlight().mCurTime < 292.5f) {
         f32 borderY = 0.0f;
         s32 numPointsCulled = 0;
 
         cLib_addCalc(&pSunPkt->mSunAlpha, 1.0f, 0.5f, 0.1f, 0.01f);
 
         if (pCamera != NULL) {
-            borderY = pCamera->mCamera.m5F8;
+            borderY = pCamera->mCamera.mTrimHeight;
         }
 
         cXyz projected;
@@ -658,9 +658,9 @@ void dKyr_sun_move() {
             cLib_addCalc(&pSunPkt->mVisibility, 1.0f, 0.5f, 0.2f, 0.01f);
     } else {
         if (numPointsVisible < 3)
-            cLib_addCalc(&pSunPkt->mVisibility, 0.0f, 0.5f, 0.2f, 0.01f);
+            cLib_addCalc(&pSunPkt->mVisibility, 0.0f, 0.5f, 0.2f, 0.001f);
         else
-            cLib_addCalc(&pSunPkt->mVisibility, 1.0f, 0.1f, 0.1f, 0.01f);
+            cLib_addCalc(&pSunPkt->mVisibility, 1.0f, 0.1f, 0.1f, 0.001f);
     }
 
     if (numPointsVisible >= 2) {
@@ -726,7 +726,7 @@ bool overhead_bg_chk() {
     pos.y += 50.0f;
     roofChk.SetPos(pos);
 
-    if (dComIfG_Bgsp()->RoofChk(&roofChk) != 1000000000.0f)
+    if (dComIfG_Bgsp()->RoofChk(&roofChk) != C_BG_MAX_HEIGHT)
         ret = true;
     pos.y += 10000.0f;
     gndChk.SetPos(&pos);
@@ -755,7 +755,7 @@ bool forward_overhead_bg_chk(cXyz* pPos, f32 dist) {
     *pPos = pos;
     roofChk.SetPos(pos);
 
-    if (dComIfG_Bgsp()->RoofChk(&roofChk) != 1000000000.0f)
+    if (dComIfG_Bgsp()->RoofChk(&roofChk) != C_BG_MAX_HEIGHT)
         ret = true;
     pos.y += 10000.0f;
     gndChk.SetPos(&pos);
@@ -2361,7 +2361,7 @@ void drawCloudShadow(Mtx drawMtx, u8** pImg) {
 
     for (s32 i = 0; i < pPkt->mCount; i++) {
         f32 size = pPkt->mEff[i].mSize;
-        if (pPkt->mEff[i].mAlpha <= 0.0f)
+        if (pPkt->mEff[i].mAlpha <= 0.000001f)
             continue;
 
         GXLoadTexObj(&texObj, GX_TEXMAP0);
@@ -2467,7 +2467,7 @@ void dKyr_thunder_move() {
             cLib_addCalc(&pThunder->mFlashTimer, 1.0f, 0.3f, 0.2f, 0.001f);
             if (pThunder->mFlashTimer >= 1.0f) {
                 if (pThunder->mState < 10)
-                    mDoAud_seStart(JA_SE_OBJ_THUNDER_NEAR);
+                    mDoAud_seStart(JA_SE_OBJ_THUNDER_NEAR, NULL);
                 pThunder->mState++;
             }
 

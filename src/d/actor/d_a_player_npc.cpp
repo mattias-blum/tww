@@ -13,7 +13,7 @@
 int daPy_npc_c::check_initialRoom() {
     if (home.roomNo < 0) {
         mAcch.CrrPos(*dComIfG_Bgsp());
-        if (mAcch.GetGroundH() == -1000000000.0f || dComIfG_Bgsp()->GetGroundCode(mAcch.m_gnd) == 4) {
+        if (mAcch.GetGroundH() == C_BG_MIN_HEIGHT || dComIfG_Bgsp()->GetGroundCode(mAcch.m_gnd) == 4) {
             return 0;
         } else {
             int roomNo = dComIfG_Bgsp()->GetRoomId(mAcch.m_gnd);
@@ -89,7 +89,7 @@ void daPy_npc_c::setPointRestart(s16 i_point, s8 option) {
     int scls_start_code = scls_data[i_point].mStart;
     int i;
     for (i = 0; i < dComIfGp_getStagePlayerNum(); i++) {
-        u8 plyr_start_code = player_data->mAngle.z & 0xFF;
+        u8 plyr_start_code = player_data->base.angle.z & 0xFF;
         if (plyr_start_code == scls_start_code) {
             break;
         }
@@ -97,8 +97,8 @@ void daPy_npc_c::setPointRestart(s16 i_point, s8 option) {
     }
     JUT_ASSERT(174, i != dComIfGp_getStagePlayerNum());
     
-    home.pos = player_data->mSpawnPos;
-    home.angle.y = player_data->mAngle.y;
+    home.pos = player_data->base.position;
+    home.angle.y = player_data->base.angle.y;
     home.roomNo = -1;
     setOffsetHomePos();
     current = home;

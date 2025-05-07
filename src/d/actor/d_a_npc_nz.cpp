@@ -19,13 +19,13 @@ const char daNpc_Nz_c::m_arc_name[] = "NZ";
 const char daNpc_Nz_c::m_bdl_arc_name[] = "Npcnz";
 
 /* 000000EC-00000128       .text daNpcNz_NodeCallBack__FP7J3DNodei */
-static BOOL daNpcNz_NodeCallBack(J3DNode* node, int param_1) {
-    return reinterpret_cast<daNpc_Nz_c*>(j3dSys.getModel()->getUserArea())->NodeCallBack(node, param_1);
+static BOOL daNpcNz_NodeCallBack(J3DNode* node, int calcTiming) {
+    return reinterpret_cast<daNpc_Nz_c*>(j3dSys.getModel()->getUserArea())->NodeCallBack(node, calcTiming);
 }
 
 /* 00000128-0000024C       .text NodeCallBack__10daNpc_Nz_cFP7J3DNodei */
-BOOL daNpc_Nz_c::NodeCallBack(J3DNode* node, int param_1) {
-    if (!param_1) {
+BOOL daNpc_Nz_c::NodeCallBack(J3DNode* node, int calcTiming) {
+    if (calcTiming == J3DNodeCBCalcTiming_In) {
         J3DModel* model = j3dSys.getModel();
         J3DJoint* joint = (J3DJoint*)node;
         s32 jntNo = joint->getJntNo();
@@ -50,13 +50,13 @@ BOOL daNpc_Nz_c::NodeCallBack(J3DNode* node, int param_1) {
 }
 
 /* 00000288-000002C4       .text daNpcNz_TailNodeCallBack__FP7J3DNodei */
-static BOOL daNpcNz_TailNodeCallBack(J3DNode* node, int param_1) {
-    return reinterpret_cast<daNpc_Nz_c*>(j3dSys.getModel()->getUserArea())->TailNodeCallBack(node, param_1);
+static BOOL daNpcNz_TailNodeCallBack(J3DNode* node, int calcTiming) {
+    return reinterpret_cast<daNpc_Nz_c*>(j3dSys.getModel()->getUserArea())->TailNodeCallBack(node, calcTiming);
 }
 
 /* 000002C4-000003A4       .text TailNodeCallBack__10daNpc_Nz_cFP7J3DNodei */
-BOOL daNpc_Nz_c::TailNodeCallBack(J3DNode* node, int param_1) {
-    if (!param_1) {
+BOOL daNpc_Nz_c::TailNodeCallBack(J3DNode* node, int calcTiming) {
+    if (calcTiming == J3DNodeCBCalcTiming_In) {
         J3DJoint* joint = (J3DJoint*)node;
         s32 jntNo = joint->getJntNo();
         s32 idx = 0;
@@ -96,7 +96,7 @@ void daNpc_Nz_c::TailControl() {
     int temp7;
     cXyz* r19 = &field_0x974[1];
     cXyz* r18 = &field_0x9EC[1];
-    cXyz* r17 = &field_0x934.mpLines->mpSegments[0];
+    cXyz* r17 = field_0x934.getPos(0);
     dBgS_GndChk gndChk;
     for(i = 1; i < 10; i++, r19++, r18++) {
         f32 temp3 = 1.0f - (i-1) * 0.1f;
@@ -176,7 +176,8 @@ BOOL daNpc_Nz_c::_createHeap() {
         }
     }
 
-    if (field_0x934.init(1, 10, static_cast<ResTIMG*>(dComIfG_getObjectRes(m_arc_name, NZ_BTI_SIPPO)), 0)) {
+    ResTIMG* img = static_cast<ResTIMG*>(dComIfG_getObjectRes(m_arc_name, NZ_BTI_SIPPO));
+    if (field_0x934.init(1, 10, img, FALSE)) {
         return TRUE;
     } else {
         return FALSE;
@@ -185,7 +186,7 @@ BOOL daNpc_Nz_c::_createHeap() {
 
 /* 00000F98-00001010       .text __ct__14daNpc_Nz_HIO_cFv */
 daNpc_Nz_HIO_c::daNpc_Nz_HIO_c() {
-    field_0x04 = -1;
+    mNo = -1;
     field_0x06 = 0x1F40;
     field_0x08 = 0x1F40;
     field_0x0A = 0;
@@ -523,7 +524,7 @@ static u32 daNpcNz_getShopBoughtMsg(u8 itemNo) {
 }
 
 /* 00001B38-00001B70       .text daNpc_Nz_ShopItemCreateCB__FPv */
-static int daNpc_Nz_ShopItemCreateCB(void* i_item) {
+static cPhs_State daNpc_Nz_ShopItemCreateCB(void* i_item) {
     daShopItem_c* i_this = static_cast<daShopItem_c*>(i_item);
     i_this->hide();
     i_this->setTevType(TEV_TYPE_ACTOR);
@@ -576,39 +577,39 @@ u16 daNpc_Nz_c::next_msgStatus(u32* pMsgNo) {
     static const u32 shop_next_msg_tbl[4][2] = {
         {
             0x33FB,
-            0x33FC
+            0x33FC,
         },
         {
             0x33FD,
-            0x33FE
+            0x33FE,
         },
         {
             0x33FF,
-            0x3400
+            0x3400,
         },
         {
             0x3401,
-            0x3402
-        }
+            0x3402,
+        },
     };
 
     const u8 itemArr1[4][2] = {
         {
             dItem_BIRD_BAIT_5_e,
-            dItem_HYOI_PEAR_e
+            dItem_HYOI_PEAR_e,
         },
         {
             dItem_RED_POTION_e,
-            dItem_BLUE_POTION_e
+            dItem_BLUE_POTION_e,
         },
         {
             dItem_BOMB_10_e,
-            dItem_BOMB_30_e
+            dItem_BOMB_30_e,
         },
         {
             dItem_ARROW_10_e,
-            dItem_ARROW_30_e
-        }
+            dItem_ARROW_30_e,
+        },
     };
 
     int temp = 1;
@@ -885,7 +886,7 @@ void daNpc_Nz_c::setSmokeParticle() {
     }
 
     if(field_0x914.getEmitter() == NULL) {
-        JPABaseEmitter* emitter = dComIfGp_particle_setToon(0x2022, &current.pos, &current.angle, 0, 0xB9, &field_0x914, fopAcM_GetRoomNo(this));
+        JPABaseEmitter* emitter = dComIfGp_particle_setToon(dPa_name::ID_COMMON_2022, &current.pos, &current.angle, 0, 0xB9, &field_0x914, fopAcM_GetRoomNo(this));
         if(emitter) {
             emitter->setRate(3.0f);
             emitter->setSpread(0.2f);
@@ -901,12 +902,12 @@ void daNpc_Nz_c::getArg() {
 }
 
 /* 00002830-000028FC       .text _create__10daNpc_Nz_cFv */
-s32 daNpc_Nz_c::_create() {
+cPhs_State daNpc_Nz_c::_create() {
     fopAcM_SetupActor(this, daNpc_Nz_c);
 
     getArg();
 
-    s32 result = dComIfG_resLoad(&mPhs1, m_arc_name);
+    cPhs_State result = dComIfG_resLoad(&mPhs1, m_arc_name);
     if(result != cPhs_COMPLEATE_e) {
         return result;
     }

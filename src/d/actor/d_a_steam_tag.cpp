@@ -4,7 +4,6 @@
 //
 
 #include "d/actor/d_a_steam_tag.h"
-#include "JSystem/J3DGraphBase/J3DSys.h"
 #include "JSystem/JParticle/JPAEmitter.h"
 #include "d/d_cc_d.h"
 #include "d/d_com_inf_game.h"
@@ -61,10 +60,10 @@ const daSteamTag_mData* daSteamTag_c::getData() {
 }
 
 /* 00000084-0000029C       .text CreateInit__12daSteamTag_cFv */
-s32 daSteamTag_c::CreateInit() {
+BOOL daSteamTag_c::CreateInit() {
     m29B = daSteamTag_prm::getSchBit(this);
     mEmitTimer = getData()->emit_time_min + cM_rndF(getData()->emit_time_range);
-    mCreateTimer = cM_rndF(getData()->create_time_range);;
+    mCreateTimer = cM_rndF(getData()->create_time_range);
     mpEmitter = NULL;
     mEmitTimer = 0;
     mGStts.Init(0xFF,0xFF,this);
@@ -94,9 +93,9 @@ BOOL daSteamTag_c::createEmitter() {
     if (mEmitterNum < 8) {
         u16 particleID;
         if (((s16)cM_rndF(100.0f) % 2) != 0) {
-            particleID = 0x808B;
+            particleID = dPa_name::ID_SCENE_808B;
         } else {
-            particleID = 0x808C;
+            particleID = dPa_name::ID_SCENE_808C;
         }
         mpEmitter = dComIfGp_particle_setToon(particleID, &current.pos, &current.angle, &scale, getData()->steam_alpha);
         if (mpEmitter) {
@@ -130,18 +129,21 @@ BOOL daSteamTag_c::execute() {
         mCreateTimer--;
         if (mCreateTimer == 0) {
             if (createEmitter()) {
+                // TODO: fakematch? debug map indicates TVec3(s16, s16, s16) constructor was used here, but the codegen doesn't match
+                // JGeometry::TVec3<s16> angle(current.angle.x, current.angle.y, current.angle.z);
                 JGeometry::TVec3<s16> angle;
                 angle.x = current.angle.x;
                 angle.y = current.angle.y;
                 angle.z = current.angle.z;
-                mpEmitter->setGlobalTranslation(current.pos);
+                JGeometry::TVec3<f32> pos(current.pos.x, current.pos.y, current.pos.z);
+                mpEmitter->setGlobalTranslation(pos);
                 mpEmitter->setGlobalRotation(angle);
                 mpEmitter->setGlobalAlpha(getData()->steam_alpha);
                 mpEmitter->playCreateParticle();
                 mEmitTimer = getData()->emit_time_min + cM_rndF(getData()->emit_time_range);
             }
             else {
-                mCreateTimer = 0x1e;
+                mCreateTimer = 30;
             }
         }
     }
@@ -190,17 +192,17 @@ static BOOL daSteamTag_Delete(daSteamTag_c* i_this) {
 
 daSteamTag_c::~daSteamTag_c() {
     if (mpEmitter != NULL) {
-      mpEmitter->becomeInvalidEmitter();
-      mpEmitter = NULL;
+        mpEmitter->becomeInvalidEmitter();
+        mpEmitter = NULL;
     }
     mPointWind.set_pwind_delete();
-    return;
 }
 
-s32 daSteamTag_c::create() {
-    int phase_state;
+cPhs_State daSteamTag_c::create() {
     fopAcM_SetupActor(this, daSteamTag_c);
     CreateInit();
+
+    cPhs_State phase_state;
     if ((strcmp(dComIfGp_getStartStageName(),"Adanmae") == 0) &&
         (current.roomNo == 0) &&
         (checkItemGet(dItem_PEARL_DIN_e, TRUE))) {
@@ -208,11 +210,12 @@ s32 daSteamTag_c::create() {
     } else {
         phase_state = cPhs_COMPLEATE_e;
     }
+
     return phase_state;
 }
 
 /* 00000930-00000AD0       .text daSteamTag_Create__FP10fopAc_ac_c */
-static s32 daSteamTag_Create(fopAc_ac_c* i_this) {
+static cPhs_State daSteamTag_Create(fopAc_ac_c* i_this) {
     return ((daSteamTag_c*)i_this)->create();
 }
 

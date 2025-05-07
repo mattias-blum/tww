@@ -16,12 +16,6 @@ BOOL dEvDt_Next_Stage(int staffIdx, int wipePrm) {
     u32 mode;
     u32 wipe;
     const char * pStageName;
-    u32 * pStartCode;
-    u32 * pRoomNo;
-    u32 * pLayer;
-    f32 * pHour;
-    u32 * pMode;
-    u32 * pWipe;
 
     roomNo = 0;
     layerNo = -1;
@@ -31,19 +25,18 @@ BOOL dEvDt_Next_Stage(int staffIdx, int wipePrm) {
     pStageName = dComIfGp_evmng_getMyStringP(staffIdx, "Stage");
     if (pStageName == NULL)
         return FALSE;
-
-    pStartCode = dComIfGp_evmng_getMyIntegerP(staffIdx, "StartCode");
-    pRoomNo = dComIfGp_evmng_getMyIntegerP(staffIdx, "RoomNo");
+    int* pStartCode = dComIfGp_evmng_getMyIntegerP(staffIdx, "StartCode");
+    int* pRoomNo = dComIfGp_evmng_getMyIntegerP(staffIdx, "RoomNo");
     if (pRoomNo != NULL)
         roomNo = *pRoomNo;
-    pLayer = dComIfGp_evmng_getMyIntegerP(staffIdx, "Layer");
+    int* pLayer = dComIfGp_evmng_getMyIntegerP(staffIdx, "Layer");
     if (pLayer != NULL)
         layerNo = *pLayer;
-    pHour = dComIfGp_evmng_getMyFloatP(staffIdx, "Hour");
-    pMode = dComIfGp_evmng_getMyIntegerP(staffIdx, "Mode");
+    f32* pHour = dComIfGp_evmng_getMyFloatP(staffIdx, "Hour");
+    int* pMode = dComIfGp_evmng_getMyIntegerP(staffIdx, "Mode");
     if (pMode != NULL)
         mode = *pMode;
-    pWipe = dComIfGp_evmng_getMyIntegerP(staffIdx, "Wipe");
+    int* pWipe = dComIfGp_evmng_getMyIntegerP(staffIdx, "Wipe");
     if (pWipe != NULL)
         wipe = *pWipe;
 
@@ -128,7 +121,7 @@ void dEvDtEvent_c::specialStaffProc(dEvDtStaff_c* staff) {
 
 /* 80071BB4-80071C18       .text specialProc_WaitStart__12dEvDtStaff_cFi */
 void dEvDtStaff_c::specialProc_WaitStart(int staffIdx) {
-    u32 * pTimer = dComIfGp_evmng_getMyIntegerP(staffIdx, "Timer");
+    int* pTimer = dComIfGp_evmng_getMyIntegerP(staffIdx, "Timer");
     if (pTimer == NULL)
         mTimer = 0;
     else
@@ -213,18 +206,23 @@ void dEvDtStaff_c::specialProcLight() {
         "CHANGE",
         "ADD_TIME",
     };
+    enum {
+        ACT_WAIT,
+        ACT_CHANGE,
+        ACT_ADD_TIME,
+    };
     int actIdx = dComIfGp_evmng_getMyActIdx(staffIdx, action_table, ARRAY_SIZE(action_table), FALSE, 0);
 
     if (dComIfGp_evmng_getIsAddvance(staffIdx)) {
         switch (actIdx) {
-        case 1: // CHANGE
+        case ACT_CHANGE:
             {
                 f32 * pHour = dComIfGp_evmng_getMyFloatP(staffIdx, "Hour");
                 if (pHour != NULL) {
                     dKy_instant_timechg(*pHour * 15.0f);
                 }
 
-                s32 * pWeather = (s32*)dComIfGp_evmng_getMyIntegerP(staffIdx, "Weather");
+                int* pWeather = dComIfGp_evmng_getMyIntegerP(staffIdx, "Weather");
                 if (pWeather != NULL) {
                     switch (*pWeather) {
                     case 0:
@@ -234,7 +232,7 @@ void dEvDtStaff_c::specialProcLight() {
                 }
             }
             break;
-        case 2: // ADD_TIME
+        case ACT_ADD_TIME:
             {
                 f32 * pHour = dComIfGp_evmng_getMyFloatP(staffIdx, "Hour");
                 if (pHour != NULL) {
@@ -270,6 +268,17 @@ void dEvDtStaff_c::specialProcMessage() {
         "TELOP_ON",
         "TELOP_OFF",
     };
+    enum {
+        ACT_WAIT,
+        ACT_CREATE_MSG,
+        ACT_PUSHBUTTON,
+        ACT_FINISH,
+        ACT_CONTINUE,
+        ACT_END,
+        ACT_DELETE,
+        ACT_TELOP_ON,
+        ACT_TELOP_OFF,
+    };
     static fpc_ProcID l_msgId;
     static msg_class* l_msg;
     static int l_msgNo;
@@ -277,51 +286,54 @@ void dEvDtStaff_c::specialProcMessage() {
     int actIdx = dComIfGp_evmng_getMyActIdx(staffIdx, action_table, ARRAY_SIZE(action_table), FALSE, 0);
     if (dComIfGp_evmng_getIsAddvance(staffIdx)) {
         switch (actIdx) {
-        case 0: // WAIT
+        case ACT_WAIT:
             specialProc_WaitStart(staffIdx);
             break;
-        case 1: { // CREATE_MSG
+        case ACT_CREATE_MSG:
+        {
             l_msgId = fpcM_ERROR_PROCESS_ID_e;
             l_msg = NULL;
-            u32* idata = dComIfGp_evmng_getMyIntegerP(staffIdx, "msgNo");
+            int* idata = dComIfGp_evmng_getMyIntegerP(staffIdx, "msgNo");
             JUT_ASSERT(0x1D2, idata);
             l_msgNo = *idata;
             mWipeDirection = 0;
             break;
         }
-        case 3: // FINISH
-        case 5: // END
+        case ACT_FINISH:
+        case ACT_END:
             JUT_ASSERT(0x1D8, l_msg);
             l_msg->mStatus = fopMsgStts_MSG_ENDS_e;
             break;
-        case 4: { // CONTINUE
+        case ACT_CONTINUE:
+        {
             JUT_ASSERT(0x1DC, l_msg);
             l_msg->mStatus = fopMsgStts_MSG_CONTINUES_e;
-            u32* idata = dComIfGp_evmng_getMyIntegerP(staffIdx, "msgNo");
+            int* idata = dComIfGp_evmng_getMyIntegerP(staffIdx, "msgNo");
             JUT_ASSERT(0x1DF, idata);
             l_msgNo = *idata;
             fopMsgM_messageSet(l_msgNo);
             break;
         }
-        case 7: { // TELOP_ON
-            u32* idata = dComIfGp_evmng_getMyIntegerP(staffIdx, "tlpNo");
+        case ACT_TELOP_ON:
+        {
+            int* idata = dComIfGp_evmng_getMyIntegerP(staffIdx, "tlpNo");
             JUT_ASSERT(0x1E5, idata);
             dComIfGp_setStageNameOn(*idata);
             specialProc_WaitStart(staffIdx);
             break;
         }
-        case 8: // TELOP_OFF
+        case ACT_TELOP_OFF:
             dComIfGp_setStageNameOff();
             break;
         }
     }
 
     switch (actIdx) {
-    case 0: // WAIT
-    case 7: // TELOP_ON
+    case ACT_WAIT:
+    case ACT_TELOP_ON:
         specialProc_WaitProc(staffIdx);
         break;
-    case 1: // CREATE_MSG
+    case ACT_CREATE_MSG:
         switch (mWipeDirection) {
         case 0:
             l_msgId = fopMsgM_messageSet(l_msgNo);
@@ -340,14 +352,14 @@ void dEvDtStaff_c::specialProcMessage() {
             break;
         }
         break;
-    case 2: // PUSHBUTTON
+    case ACT_PUSHBUTTON:
         JUT_ASSERT(0x209, l_msg);
         if (l_msg->mStatus == fopMsgStts_MSG_DISPLAYED_e) {
             dComIfGp_evmng_cutEnd(staffIdx);
         }
         break;
-    case 3: // FINISH
-    case 6: // DELETE
+    case ACT_FINISH:
+    case ACT_DELETE:
         if (!l_msg) {
             dComIfGp_evmng_cutEnd(staffIdx);
         } else if (l_msg->mStatus == fopMsgStts_BOX_CLOSED_e) {
@@ -357,10 +369,10 @@ void dEvDtStaff_c::specialProcMessage() {
             dComIfGp_evmng_cutEnd(staffIdx);
         }
         break;
-    case 4: // CONTINUE
+    case ACT_CONTINUE:
         dComIfGp_evmng_cutEnd(staffIdx);
         break;
-    case 5: // END
+    case ACT_END:
         switch (l_msg->mStatus) {
         case fopMsgStts_BOX_CLOSING_e:
         case fopMsgStts_BOX_CLOSED_e:
@@ -368,7 +380,7 @@ void dEvDtStaff_c::specialProcMessage() {
             break;
         }
         break;
-    case 8: // TELOP_OFF
+    case ACT_TELOP_OFF:
         if (dComIfGp_checkStageName() == 0) {
             dComIfGp_evmng_cutEnd(staffIdx);
         }
@@ -397,31 +409,41 @@ void dEvDtStaff_c::specialProcSound() {
         "LANDING_DEMO",
         "BGMSTOP",
     };
+    enum {
+        ACT_WAIT,
+        ACT_STRM_PLAY,
+        ACT_STRM_DEMO_MJ_SISTER,
+        ACT_STRM_DEMO_GO_MAJU,
+        ACT_NOMSG_WAIT,
+        ACT_RIDDLE,
+        ACT_LANDING_DEMO,
+        ACT_BGMSTOP,
+    };
 
     int actIdx = dComIfGp_evmng_getMyActIdx(staffIdx, action_table, ARRAY_SIZE(action_table), FALSE, 0);
     if (dComIfGp_evmng_getIsAddvance(staffIdx)) {
         switch (actIdx) {
-            case 0: // WAIT
+            case ACT_WAIT:
                 specialProc_WaitStart(staffIdx);
                 break;
-            case 1: // STRM_PLAY
+            case ACT_STRM_PLAY:
                 mDoAud_bgmStreamPlay();
                 break;
-            case 2: // STRM_DEMO_MJ_SISTER
+            case ACT_STRM_DEMO_MJ_SISTER:
                 mDoAud_bgmStreamPrepare(JA_STRM_DEMO_MJ_SISTER);
                 break;
-            case 3: // STRM_DEMO_GO_MAJU
+            case ACT_STRM_DEMO_GO_MAJU:
                 mDoAud_bgmStreamPrepare(JA_STRM_DEMO_GO_MAJU);
                 break;
-            case 4: // NOMSG_WAIT
+            case ACT_NOMSG_WAIT:
                 specialProc_WaitStart(staffIdx);
                 break;
-            case 5: // RIDDLE
+            case ACT_RIDDLE:
                 mDoAud_seStart(JA_SE_READ_RIDDLE_1);
                 break;
-            case 6: // LANDING_DEMO
+            case ACT_LANDING_DEMO:
                 {
-                    s32* pPrepare = (s32*)dComIfGp_evmng_getMyIntegerP(staffIdx, "PREPARE");
+                    int* pPrepare = dComIfGp_evmng_getMyIntegerP(staffIdx, "PREPARE");
                     if (pPrepare != NULL) {
                         static u32 landing_table[] = {
                             2, 3, 4, 5, 6, 1, 7,
@@ -431,18 +453,18 @@ void dEvDtStaff_c::specialProcSound() {
                         mDoAud_prepareLandingDemo(landing_table[*pPrepare]);
                     }
 
-                    u32 * pStart = dComIfGp_evmng_getMyIntegerP(staffIdx, "START");
+                    int* pStart = dComIfGp_evmng_getMyIntegerP(staffIdx, "START");
                     if (pStart != NULL)
                         mDoAud_startLandingDemo();
 
-                    u32 * pEnd = dComIfGp_evmng_getMyIntegerP(staffIdx, "END");
+                    int* pEnd = dComIfGp_evmng_getMyIntegerP(staffIdx, "END");
                     if (pEnd != NULL)
                         mDoAud_endLandingDemo();
                 }
                 break;
-            case 7: // BGMSTOP
+            case ACT_BGMSTOP:
                 {
-                    u32* pTimer = dComIfGp_evmng_getMyIntegerP(staffIdx, "Timer");
+                    int* pTimer = dComIfGp_evmng_getMyIntegerP(staffIdx, "Timer");
                     if (pTimer != NULL)
                         mDoAud_bgmStop(*pTimer);
                 }
@@ -451,10 +473,10 @@ void dEvDtStaff_c::specialProcSound() {
     }
     
     switch (actIdx) {
-    case 0: // WAIT
+    case ACT_WAIT:
         specialProc_WaitProc(staffIdx);
         break;
-    case 4: // NOMSG_WAIT
+    case ACT_NOMSG_WAIT:
         if (mTimer <= dComIfGp_demo_get()->getFrameNoMsg())
             dComIfGp_evmng_cutEnd(staffIdx);
         break;
@@ -476,13 +498,17 @@ void dEvDtStaff_c::specialProcCreate() {
         "WAIT",
         "CREATE",
     };
+    enum {
+        ACT_WAIT,
+        ACT_CREATE,
+    };
 
     int actIdx = dComIfGp_evmng_getMyActIdx(staffIdx, action_table, ARRAY_SIZE(action_table), FALSE, 0);
     if (dComIfGp_evmng_getIsAddvance(staffIdx)) {
         switch (actIdx) {
-            case 0: // WAIT
+            case ACT_WAIT:
                 break;
-            case 1: // CREATE
+            case ACT_CREATE:
             {
                 const char * name = dComIfGp_evmng_getMyStringP(staffIdx, "MAKECAST");
                 JUT_ASSERT(0x2e3, name);
@@ -490,7 +516,7 @@ void dEvDtStaff_c::specialProcCreate() {
                 dStage_objectNameInf * objectName = dStage_searchName(name);
                 JUT_ASSERT(0x2e5, objectName);
 
-                u32* pArg = dComIfGp_evmng_getMyIntegerP(staffIdx, "ARG");
+                int* pArg = dComIfGp_evmng_getMyIntegerP(staffIdx, "ARG");
                 u32 arg;
                 if (pArg == NULL) {
                     arg = 0xFFFFFFFF;
@@ -506,7 +532,7 @@ void dEvDtStaff_c::specialProcCreate() {
                     pos = *pPos;
                 }
 
-                s32* pAngle = (s32*)dComIfGp_evmng_getMyIntegerP(staffIdx, "ANGLE");
+                int* pAngle = dComIfGp_evmng_getMyIntegerP(staffIdx, "ANGLE");
                 csXyz angle;
                 if (pAngle == NULL) {
                     angle.setall(0);
@@ -554,20 +580,31 @@ void dEvDtStaff_c::specialProcDirector() {
         "PLAYER_DRAW",
         "PLAYER_NODRAW",
     };
+    enum {
+        ACT_WAIT,
+        ACT_NEXT,
+        ACT_FADE,
+        ACT_BGM_START,
+        ACT_VIBRATION,
+        ACT_SE_START,
+        ACT_WIPE,
+        ACT_PLAYER_DRAW,
+        ACT_PLAYER_NODRAW,
+    };
 
     int actIdx = dComIfGp_evmng_getMyActIdx(staffIdx, action_table, ARRAY_SIZE(action_table), FALSE, 0);
     if (dComIfGp_evmng_getIsAddvance(staffIdx)) {
         switch (actIdx) {
-            case 0: // WAIT
+            case ACT_WAIT:
                 specialProc_WaitStart(staffIdx);
                 break;
-            case 1: // NEXT
+            case ACT_NEXT:
                 dEvDt_Next_Stage(staffIdx, 0);
                 break;
-            case 2: // FADE
+            case ACT_FADE:
                 {
                     f32* rate = dComIfGp_evmng_getMyFloatP(staffIdx, "Rate");
-                    u32* color = dComIfGp_evmng_getMyIntegerP(staffIdx, "Color");
+                    int* color = dComIfGp_evmng_getMyIntegerP(staffIdx, "Color");
                     JUT_ASSERT(0x343, rate);
                     if (*rate > 0.0f) {
                         mDoGph_gInf_c::setFadeRate(0.0f);
@@ -585,9 +622,9 @@ void dEvDtStaff_c::specialProcDirector() {
                     }
                 }
                 break;
-            case 3: // BGM_START
+            case ACT_BGM_START:
                 {
-                    u32* pBGM = dComIfGp_evmng_getMyIntegerP(staffIdx, "BGM_ID");
+                    int* pBGM = dComIfGp_evmng_getMyIntegerP(staffIdx, "BGM_ID");
                     u32 bgm;
                     static u32 bgm_table[] = {
                         JA_BGM_I_MAJU,
@@ -604,14 +641,14 @@ void dEvDtStaff_c::specialProcDirector() {
                     mDoAud_bgmStart(bgm_table[bgm]);
                 }
                 break;
-            case 4: // VIBRATION
+            case ACT_VIBRATION:
                 {
                     specialProc_WaitStart(staffIdx);
                     if (mTimer == 0)
                         JUT_ASSERT(0x36b, FALSE);
 
                     const u8* pattern = (const u8*)dComIfGp_evmng_getMyIntegerP(staffIdx, "Pattern");
-                    const u32* type = dComIfGp_evmng_getMyIntegerP(staffIdx, "Type");
+                    const int* type = dComIfGp_evmng_getMyIntegerP(staffIdx, "Type");
                     if (pattern == NULL || type == NULL)
                         JUT_ASSERT(0x36f, FALSE);
 
@@ -622,9 +659,9 @@ void dEvDtStaff_c::specialProcDirector() {
                     dComIfGp_getVibration().StartQuake(pattern, 0, *type, xyz);
                 }
                 break;
-            case 5: // SE_START
+            case ACT_SE_START:
                 {
-                    s32* pSE = (s32*)dComIfGp_evmng_getMyIntegerP(staffIdx, "SENUM");
+                    int* pSE = dComIfGp_evmng_getMyIntegerP(staffIdx, "SENUM");
                     if (pSE != NULL) {
                         static u32 se_table[] = {
                             JA_SE_CM_ZL_FDEMO_JIMEN,
@@ -636,7 +673,7 @@ void dEvDtStaff_c::specialProcDirector() {
                     }
                 }
                 break;
-            case 6: // WIPE
+            case ACT_WIPE:
                 {
                     f32* rate = dComIfGp_evmng_getMyFloatP(staffIdx, "Rate");
                     JUT_ASSERT(0x384, rate);
@@ -645,7 +682,7 @@ void dEvDtStaff_c::specialProcDirector() {
                         mWipeDirection = 0;
                     else
                         mWipeDirection = 1;
-                    u32* sound = dComIfGp_evmng_getMyIntegerP(staffIdx, "SOUND");
+                    int* sound = dComIfGp_evmng_getMyIntegerP(staffIdx, "SOUND");
                     if (sound != NULL) {
                         switch (*sound) {
                         case 0:
@@ -655,22 +692,22 @@ void dEvDtStaff_c::specialProcDirector() {
                     }
                 }
                 break;
-            case 7: // PLAYER_DRAW
+            case ACT_PLAYER_DRAW:
                 player->offPlayerNoDraw();
                 break;
-            case 8: // PLAYER_NODRAW
+            case ACT_PLAYER_NODRAW:
                 player->onPlayerNoDraw();
                 break;
         }
     }
     
     switch (actIdx) {
-        case 0: // WAIT
+        case ACT_WAIT:
             specialProc_WaitProc(staffIdx);
             break;
-        case 1: // NEXT
+        case ACT_NEXT:
             break;
-        case 2: // FADE
+        case ACT_FADE:
             {
                 if (!mDoGph_gInf_c::isFade()) {
                     dComIfGp_evmng_cutEnd(staffIdx);
@@ -682,7 +719,7 @@ void dEvDtStaff_c::specialProcDirector() {
                 }
             }
             break;
-        case 4: // VIBRATION
+        case ACT_VIBRATION:
             {
                 if (mTimer > 0) {
                     mTimer--;
@@ -693,7 +730,7 @@ void dEvDtStaff_c::specialProcDirector() {
                 }
             }
             break;
-        case 6: // WIPE
+        case ACT_WIPE:
             {
                 if (mWipeDirection) {
                     if (dDlst_list_c::getWipeRate() == 0.0f)
@@ -723,15 +760,20 @@ void dEvDtStaff_c::specialProcPackage() {
         "PLAY",
         "PLAY2",
     };
+    enum {
+        ACT_WAIT,
+        ACT_PLAY,
+        ACT_PLAY2,
+    };
 
     int actIdx = dComIfGp_evmng_getMyActIdx(staffIdx, action_table, ARRAY_SIZE(action_table), FALSE, 0);
     if (dComIfGp_evmng_getIsAddvance(staffIdx)) {
         switch (actIdx) {
-        case 0: // WAIT
+        case ACT_WAIT:
             specialProc_WaitStart(staffIdx);
             break;
-        case 1: // PLAY
-        case 2: // PLAY2
+        case ACT_PLAY:
+        case ACT_PLAY2:
             {
                 const char* filename = dComIfGp_evmng_getMyStringP(staffIdx, "FileName");
                 cXyz* pOffsetPos = dComIfGp_evmng_getMyXyzP(staffIdx, "OffsetPos");
@@ -752,7 +794,7 @@ void dEvDtStaff_c::specialProcPackage() {
                 JUT_ASSERT(0x42e, demo_data);
                 dComIfGp_demo_create((const u8*)demo_data, pOffsetPos, offsetAngY);
                 dComIfGp_event_setCullRate(10.0f);
-                u32* eventFlag = dComIfGp_evmng_getMyIntegerP(staffIdx, "EventFlag");
+                int* eventFlag = dComIfGp_evmng_getMyIntegerP(staffIdx, "EventFlag");
                 if (eventFlag != NULL)
                     dComIfGs_onEventBit(*eventFlag);
             }
@@ -761,10 +803,10 @@ void dEvDtStaff_c::specialProcPackage() {
     }
 
     switch (actIdx) {
-    case 0: // WAIT
+    case ACT_WAIT:
         specialProc_WaitProc(staffIdx);
         break;
-    case 1: // PLAY
+    case ACT_PLAY:
         {
             if (mWipeDirection == 0) {
                 if (dComIfGp_demo_mode() == 2) {
@@ -800,24 +842,28 @@ void dEvDtStaff_c::specialProcTimekeeper() {
         "COUNTDOWN",
         "WAIT",
     };
+    enum {
+        ACT_COUNTDOWN,
+        ACT_WAIT,
+    };
 
     int actIdx = dComIfGp_evmng_getMyActIdx(staffIdx, action_table, ARRAY_SIZE(action_table), FALSE, 0);
     if (dComIfGp_evmng_getIsAddvance(staffIdx)) {
         switch (actIdx) {
-        case 0: // COUNTDOWN
+        case ACT_COUNTDOWN:
             {
-                u32* idata = dComIfGp_evmng_getMyIntegerP(staffIdx, "Timer");
+                int* idata = dComIfGp_evmng_getMyIntegerP(staffIdx, "Timer");
                 JUT_ASSERT(0x482, idata);
                 mTimer = *idata;
             }
             break;
-        case 1: // WAIT
+        case ACT_WAIT:
             break;
         }
     }
 
     switch (actIdx) {
-    case 0: // COUNTDOWN
+    case ACT_COUNTDOWN:
         {
             if (mTimer > 0)
                 mTimer--;
@@ -825,7 +871,7 @@ void dEvDtStaff_c::specialProcTimekeeper() {
                 dComIfGp_evmng_cutEnd(staffIdx);
         }
         break;
-    case 1: // WAIT
+    case ACT_WAIT:
         dComIfGp_evmng_cutEnd(staffIdx);
         break;
     case -1:

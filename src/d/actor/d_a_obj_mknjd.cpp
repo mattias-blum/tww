@@ -76,8 +76,8 @@ static u16 joint_number_table[20];
 Mtx daObjMknjD::Act_c::M_tmp_mtx;
 
 /* 00000078-0000012C       .text nodeCallBackL__FP7J3DNodei */
-static BOOL nodeCallBackL(J3DNode* i_node, int i_param2) {
-    if (i_param2 == 0) {
+static BOOL nodeCallBackL(J3DNode* i_node, int calcTiming) {
+    if (calcTiming == J3DNodeCBCalcTiming_In) {
         int jntNo = static_cast<J3DJoint*>(i_node)->getJntNo();
         
         J3DModel* mdl = j3dSys.getModel();
@@ -97,8 +97,8 @@ static BOOL nodeCallBackL(J3DNode* i_node, int i_param2) {
 }
 
 /* 0000012C-000001E0       .text nodeCallBackR__FP7J3DNodei */
-static BOOL nodeCallBackR(J3DNode* i_node, int i_param2) {
-    if (i_param2 == 0) {
+static BOOL nodeCallBackR(J3DNode* i_node, int calcTiming) {
+    if (calcTiming == J3DNodeCBCalcTiming_In) {
         int jntNo = static_cast<J3DJoint*>(i_node)->getJntNo();
 
         J3DModel* mdl = j3dSys.getModel();
@@ -118,8 +118,8 @@ static BOOL nodeCallBackR(J3DNode* i_node, int i_param2) {
 }
 
 /* 000001E0-000002B0       .text nodeCallBack_Hahen__FP7J3DNodei */
-static BOOL nodeCallBack_Hahen(J3DNode* i_node, int i_param2) {
-    if (i_param2 == 0) {
+static BOOL nodeCallBack_Hahen(J3DNode* i_node, int calcTiming) {
+    if (calcTiming == J3DNodeCBCalcTiming_In) {
         int jntNo = static_cast<J3DJoint*>(i_node)->getJntNo();
         u16 shardIdx = joint_number_table[jntNo - 1];
 
@@ -151,7 +151,11 @@ static s16 daObjMknjD_XyEventCB(void* i_this, int i_param2) {
 
 /* 000002F0-00000314       .text XyCheckCB__Q210daObjMknjD5Act_cFi */
 s16 daObjMknjD::Act_c::XyCheckCB(int i_itemBtn) {
-    return dComIfGp_getSelectItem(i_itemBtn) == dItem_WIND_WAKER_e ? 1 : 0;
+    if (dComIfGp_getSelectItem(i_itemBtn) == dItem_WIND_WAKER_e) {
+        return TRUE;
+    } else {
+        return FALSE;
+    }
 }
 
 /* 00000314-0000031C       .text XyEventCB__Q210daObjMknjD5Act_cFi */
@@ -160,7 +164,7 @@ s16 daObjMknjD::Act_c::XyEventCB(int) {
 }
 
 /* 0000031C-00000620       .text CreateHeap__Q210daObjMknjD5Act_cFv */
-int daObjMknjD::Act_c::CreateHeap() {
+BOOL daObjMknjD::Act_c::CreateHeap() {
     const void* temp_r26; // Fakematch to get it to use the same register for model_data_d and jntName
     if (m043E == true) {
         temp_r26 = dComIfG_getObjectRes(M_arcname, MKNJD_BDL_MKNJK);
@@ -215,14 +219,14 @@ int daObjMknjD::Act_c::CreateHeap() {
         mBreakMdl->setUserArea(reinterpret_cast<u32>(this));
         mMainMdlAlpha = 0xFF;
 
-        return 1;
+        return TRUE;
     }
 
-    return 0;
+    return FALSE;
 }
 
 /* 00000620-000008E8       .text Create__Q210daObjMknjD5Act_cFv */
-int daObjMknjD::Act_c::Create() {
+BOOL daObjMknjD::Act_c::Create() {
     fopAcM_SetMtx(this, mMainMdl->getBaseTRMtx());
     init_mtx();
     fopAcM_SetMtx(this, mBreakMdl->getBaseTRMtx());
@@ -270,7 +274,7 @@ int daObjMknjD::Act_c::Create() {
 
     attention_info.distances[fopAc_Attn_TYPE_TALK_e] = 0x3D;
     attention_info.distances[fopAc_Attn_TYPE_SPEAK_e] = 0x3D;
-    attention_info.flags |= fopAc_Attn_ACTION_SPEAK_e | fopAc_Attn_TALKFLAG_CHECK_e;
+    cLib_onBit<u32>(attention_info.flags, fopAc_Attn_ACTION_SPEAK_e | fopAc_Attn_TALKFLAG_CHECK_e);
 
     if (!checkItemGet(mGiveItemNo, 1)) {
         m043F = 8;
@@ -285,22 +289,21 @@ int daObjMknjD::Act_c::Create() {
     mMsgPID = fpcM_ERROR_PROCESS_ID_e;
     m0504 = false;
 
-    return 1;
+    return TRUE;
 }
 
 /* 000008E8-00000A84       .text Mthd_Create__Q210daObjMknjD5Act_cFv */
-s32 daObjMknjD::Act_c::Mthd_Create() {
-    s32 phase_state;
-
+cPhs_State daObjMknjD::Act_c::Mthd_Create() {
     fopAcM_SetupActor(this, daObjMknjD::Act_c);
 
     m043E = prm_get_Type();
 
+    cPhs_State phase_state;
     if (fopAcM_isSwitch(this, prm_get_swSave())) {
         mEmitters[2] = NULL;
         mEmitters[3] = NULL;
 
-        return 3;
+        return cPhs_STOP_e;
     }
     else {
         phase_state = dComIfG_resLoad(&mPhs, M_arcname);
@@ -315,18 +318,18 @@ s32 daObjMknjD::Act_c::Mthd_Create() {
 }
 
 /* 00000B64-00000BDC       .text Delete__Q210daObjMknjD5Act_cFv */
-int daObjMknjD::Act_c::Delete() {
-    dComIfGp_getAttention().mFlags &= 0x7fffffff;
+BOOL daObjMknjD::Act_c::Delete() {
+    dComIfGp_att_revivalAleart();
 
     for (int i = 0; i < 4; i++) {
         mSmokeCBs[i].end();
     }
 
-    return 1;
+    return TRUE;
 }
 
 /* 00000BDC-00000C34       .text Mthd_Delete__Q210daObjMknjD5Act_cFv */
-s32 daObjMknjD::Act_c::Mthd_Delete() {
+BOOL daObjMknjD::Act_c::Mthd_Delete() {
     int bgDeleteResult = MoveBGDelete();
     
     if (fpcM_CreateResult(this) != cPhs_STOP_e) {
@@ -360,7 +363,7 @@ void daObjMknjD::Act_c::setGoal(int i_staffIdx) {
     cXyz pos = *dComIfGp_evmng_getMyXyzP(i_staffIdx, "Posion");
 
     mDoMtx_stack_c::transS(current.pos);
-    mDoMtx_YrotM(mDoMtx_stack_c::get(), current.angle.y);
+    mDoMtx_stack_c::YrotM(current.angle.y);
 
     mDoMtx_stack_c::transM(pos);
     
@@ -591,7 +594,7 @@ bool daObjMknjD::Act_c::daObjMknjD_break() {
     /* Particles and sound effects */
     // After 1 frame, the particles for the statue splitting in half spawn.
     if (mBreakTimer == 1) {
-        mEmitters[0] = dComIfGp_particle_set(0x8185, &current.pos, &current.angle);
+        mEmitters[0] = dComIfGp_particle_set(dPa_name::ID_SCENE_8185, &current.pos, &current.angle);
 
         GXColor emitter2Color;
         emitter2Color.r = tevStr.mColorC0.r;
@@ -599,9 +602,9 @@ bool daObjMknjD::Act_c::daObjMknjD_break() {
         emitter2Color.b = tevStr.mColorC0.b;
         emitter2Color.a = tevStr.mColorC0.a;
         
-        mEmitters[1] = dComIfGp_particle_setProjection(0x8186, &current.pos, &current.angle, NULL, 0xFF, NULL, current.roomNo, &tevStr.mColorK0, &emitter2Color);
+        mEmitters[1] = dComIfGp_particle_setProjection(dPa_name::ID_SCENE_8186, &current.pos, &current.angle, NULL, 0xFF, NULL, current.roomNo, &tevStr.mColorK0, &emitter2Color);
 
-        mEmitters[2] = dComIfGp_particle_setToon(0xA187, &current.pos, &current.angle, NULL, 0xFF, &mSmokeCBs[2]);
+        mEmitters[2] = dComIfGp_particle_setToon(dPa_name::ID_SCENE_A187, &current.pos, &current.angle, NULL, 0xFF, &mSmokeCBs[2]);
         mSmokeCBs[2].setRateOff(0);
 
         fopAcM_seStartCurrent(this, JA_SE_OBJ_SAGE_GATE_CREAK, 0);
@@ -634,7 +637,7 @@ bool daObjMknjD::Act_c::daObjMknjD_break() {
         mBrokenPos = current.pos;
         mBrokenPos.y += 350.0f;
 
-        mEmitters[3] = dComIfGp_particle_setToon(0x2027, &mBrokenPos, &current.angle, NULL, 0xFF, &mSmokeCBs[3]);
+        mEmitters[3] = dComIfGp_particle_setToon(dPa_name::ID_COMMON_2027, &mBrokenPos, &current.angle, NULL, 0xFF, &mSmokeCBs[3]);
         if (mEmitters[3] != NULL) {
             mEmitters[3]->setVolumeSweep(0.5f);
             mEmitters[3]->setLifeTime(0x2D);
@@ -695,7 +698,7 @@ bool daObjMknjD::Act_c::daObjMknjD_break() {
 }
 
 /* 0000195C-000020E0       .text Execute__Q210daObjMknjD5Act_cFPPA3_A4_f */
-int daObjMknjD::Act_c::Execute(Mtx** i_mtx) {
+BOOL daObjMknjD::Act_c::Execute(Mtx** i_mtx) {
     daPy_py_c* player = static_cast<daPy_py_c*>(dComIfGp_getPlayer(0));
     daPy_py_c* partner = static_cast<daPy_py_c*>(dComIfGp_getCb1Player());
 
@@ -801,7 +804,7 @@ int daObjMknjD::Act_c::Execute(Mtx** i_mtx) {
                 mDoAud_bgmStop(30);
                 mDoAud_taktModeMuteOff();
 
-                dComIfGp_getAttention().mFlags |= 0x80000000;
+                dComIfGp_att_offAleart();
 
                 if (m043E == true) {
                     m0432 = 0x2B;
@@ -818,7 +821,7 @@ int daObjMknjD::Act_c::Execute(Mtx** i_mtx) {
             privateCut();
 
             if (dComIfGp_evmng_endCheck(mDemoEventIdx)) {
-                dComIfGp_getAttention().mFlags &= ~0x80000000;
+                dComIfGp_att_revivalAleart();
                 dComIfGp_event_reset();
 
                 fopAcM_delete(this);
@@ -906,7 +909,7 @@ int daObjMknjD::Act_c::Execute(Mtx** i_mtx) {
         m0434 = 0;
     }
 
-    return 1;
+    return TRUE;
 }
 
 /* 000020E0-000022FC       .text setMaterial__10daObjMknjDFP11J3DMaterialUc */
@@ -943,7 +946,7 @@ void daObjMknjD::setMaterial(J3DMaterial* i_mat, u8 i_alpha) {
 }
 
 /* 000022FC-00002430       .text Draw__Q210daObjMknjD5Act_cFv */
-int daObjMknjD::Act_c::Draw() {
+BOOL daObjMknjD::Act_c::Draw() {
     g_env_light.settingTevStruct(TEV_TYPE_BG0, &current.pos, &tevStr);
     g_env_light.setLightTevColorType(mBreakMdl, &tevStr);
 
@@ -967,34 +970,34 @@ int daObjMknjD::Act_c::Draw() {
 
     dComIfGd_setList();
 
-    return 1;
+    return TRUE;
 }
 
 namespace daObjMknjD {
     namespace {
         /* 00002430-00002450       .text Mthd_Create__Q210daObjMknjD27@unnamed@d_a_obj_mknjd_cpp@FPv */
-        s32 Mthd_Create(void* i_this) {
+        cPhs_State Mthd_Create(void* i_this) {
             return static_cast<Act_c*>(i_this)->Mthd_Create();
         }
 
         /* 00002450-00002470       .text Mthd_Delete__Q210daObjMknjD27@unnamed@d_a_obj_mknjd_cpp@FPv */
-        s32 Mthd_Delete(void* i_this) {
+        BOOL Mthd_Delete(void* i_this) {
             return static_cast<Act_c*>(i_this)->Mthd_Delete();
         }
 
         /* 00002470-00002490       .text Mthd_Execute__Q210daObjMknjD27@unnamed@d_a_obj_mknjd_cpp@FPv */
-        s32 Mthd_Execute(void* i_this) {
+        BOOL Mthd_Execute(void* i_this) {
             return static_cast<Act_c*>(i_this)->MoveBGExecute();
         }
 
         /* 00002490-000024BC       .text Mthd_Draw__Q210daObjMknjD27@unnamed@d_a_obj_mknjd_cpp@FPv */
-        s32 Mthd_Draw(void* i_this) {
-            return static_cast<Act_c*>(i_this)->Draw();
+        BOOL Mthd_Draw(void* i_this) {
+            return static_cast<Act_c*>(i_this)->MoveBGDraw();
         }
 
         /* 000024BC-000024E8       .text Mthd_IsDelete__Q210daObjMknjD27@unnamed@d_a_obj_mknjd_cpp@FPv */
-        s32 Mthd_IsDelete(void* i_this) {
-            return static_cast<Act_c*>(i_this)->IsDelete();
+        BOOL Mthd_IsDelete(void* i_this) {
+            return static_cast<Act_c*>(i_this)->MoveBGIsDelete();
         }
 
         static actor_method_class Mthd_Table = {

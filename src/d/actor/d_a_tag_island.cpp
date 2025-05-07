@@ -191,7 +191,7 @@ u16 daTag_Island_c::talk() {
 void daTag_Island_c::demoInitTact_Bf() {
     talkInit();
 
-    s32* a_intP = (s32*)dComIfGp_evmng_getMyIntegerP(mStaffId, "prm0");
+    int* a_intP = dComIfGp_evmng_getMyIntegerP(mStaffId, "prm0");
     JUT_ASSERT(0x167, a_intP);
 
     if (a_intP != NULL) {
@@ -217,18 +217,18 @@ void daTag_Island_c::demoInitTact_Af() {
     l_msg->mStatus = fopMsgStts_MSG_ENDS_e;
     fopMsgM_messageSendOn();
     if (player->getTactTimerCancel() > 0)
-        setFlag(0x04);
+        setFlag(daTagIsl_UNK_04);
     else
-        clrFlag(0x04);
+        clrFlag(daTagIsl_UNK_04);
 }
 
 /* 00000854-00000A00       .text demoProcTact_Af__14daTag_Island_cFv */
 BOOL daTag_Island_c::demoProcTact_Af() {
     u16 rt = talk();
     if (rt == fopMsgStts_BOX_CLOSED_e || rt == 0xFE) {
-        if (chkFlag(0x01)) {
-            clrFlag(0x01);
-            if (chkFlag(0x04)) {
+        if (chkFlag(daTagIsl_UNK_01)) {
+            clrFlag(daTagIsl_UNK_01);
+            if (chkFlag(daTagIsl_UNK_04)) {
                 if (m2A0 == 1) {
                     mEventId = dComIfGp_evmng_getEventIdx("TACT_TEARCH4");
                 } else {
@@ -244,7 +244,7 @@ BOOL daTag_Island_c::demoProcTact_Af() {
                     mEventId = dComIfGp_evmng_getEventIdx("TACT_TEARCH3");
                 }
             }
-            setFlag(0x02);
+            setFlag(daTagIsl_UNK_02);
             fopAcM_orderChangeEventId(this, daPy_getPlayerLinkActorClass(), mEventId, 0, 0xFFFF);
         } else {
             JUT_ASSERT(0x1b3, FALSE);
@@ -258,7 +258,7 @@ BOOL daTag_Island_c::demoProcTact_Af() {
 /* 00000A00-00000AC4       .text demoInitSpeak__14daTag_Island_cFv */
 void daTag_Island_c::demoInitSpeak() {
     talkInit();
-    s32* a_intP = (s32*)dComIfGp_evmng_getMyIntegerP(mStaffId, "MsgNo");
+    int* a_intP = dComIfGp_evmng_getMyIntegerP(mStaffId, "MsgNo");
     JUT_ASSERT(0x1C2, a_intP);
 
     m2AC = *a_intP;
@@ -282,7 +282,7 @@ BOOL daTag_Island_c::demoProcSpeak() {
 
 /* 00000B1C-00000B84       .text demoInitWait__14daTag_Island_cFv */
 void daTag_Island_c::demoInitWait() {
-    s32* a_intP = (s32*)dComIfGp_evmng_getMyIntegerP(mStaffId, "Timer");
+    int* a_intP = dComIfGp_evmng_getMyIntegerP(mStaffId, "Timer");
     if (a_intP != NULL)
         mTimer = *a_intP;
     else
@@ -300,7 +300,7 @@ BOOL daTag_Island_c::demoProcWait() {
 
 /* 00000BD4-00000BE4       .text demoInitCom__14daTag_Island_cFv */
 void daTag_Island_c::demoInitCom() {
-    setFlag(0x01);
+    setFlag(daTagIsl_UNK_01);
 }
 
 /* 00000BE4-00000BE8       .text demoProcCom__14daTag_Island_cFv */
@@ -314,9 +314,9 @@ void daTag_Island_c::demoProcCom_ikada() {
         ikada->mCurPathP0 = ikada->mInitPos;
         ikada->current.pos = ikada->mCurPathP0;
         ikada->mCurPathPoint = 0;
-        ikada->m02CC = ikada->mpPath->mpPnt[ikada->mCurPathPoint].mPos;
-        ikada->mCurPathP1 = ikada->mpPath->mpPnt[ikada->mCurPathPoint + 1].mPos;
-        ikada->mPathPosTarget = ikada->mpPath->mpPnt[ikada->mCurPathPoint].mPos;
+        ikada->m02CC = ikada->mpPath->m_points[ikada->mCurPathPoint].m_position;
+        ikada->mCurPathP1 = ikada->mpPath->m_points[ikada->mCurPathPoint + 1].m_position;
+        ikada->mPathPosTarget = ikada->mpPath->m_points[ikada->mCurPathPoint].m_position;
     }
 }
 
@@ -337,9 +337,9 @@ int daTag_Island_c::getNowEventAction() {
 BOOL daTag_Island_c::demoProc() {
     BOOL ret = FALSE;
 
-    if (chkFlag(0x02)) {
+    if (chkFlag(daTagIsl_UNK_02)) {
         mStaffId = dComIfGp_evmng_getMyStaffId("TagIsl");
-        clrFlag(0x02);
+        clrFlag(daTagIsl_UNK_02);
         dComIfGp_event_setTalkPartner(dComIfGp_getShipActor());
     }
 
@@ -381,7 +381,7 @@ BOOL daTag_Island_c::actionTact() {
 BOOL daTag_Island_c::actionEvent() {
     if (dComIfGp_evmng_endCheck(mEventId)) {
         if (getType() == 1) {
-            setFlag(0x02);
+            setFlag(daTagIsl_UNK_02);
             setActio(ACT_TACT);
             mEventId = dComIfGp_evmng_getEventIdx("TACT_TEARCH0");
             fopAcM_orderChangeEventId(this, daPy_getPlayerLinkActorClass(), mEventId, 0, 0xFFFF);
@@ -446,7 +446,7 @@ BOOL daTag_Island_c::actionWait() {
     return TRUE;
 }
 
-s32 daTag_Island_c::create() {
+cPhs_State daTag_Island_c::create() {
     fopAcM_SetupActor(this, daTag_Island_c);
     s32 swbit = getSwbit();
     makeEvId();
@@ -515,7 +515,7 @@ static BOOL daTag_Island_Delete(daTag_Island_c* i_this) {
 }
 
 /* 000012FC-000013D8       .text daTag_Island_Create__FP10fopAc_ac_c */
-static s32 daTag_Island_Create(fopAc_ac_c* i_ac) {
+static cPhs_State daTag_Island_Create(fopAc_ac_c* i_ac) {
     return ((daTag_Island_c*)i_ac)->create();
 }
 

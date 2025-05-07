@@ -19,7 +19,7 @@ daObj_Bscurtain_HIO_c l_HIO;
 
 /* 000000EC-00000118       .text __ct__21daObj_Bscurtain_HIO_cFv */
 daObj_Bscurtain_HIO_c::daObj_Bscurtain_HIO_c() {
-    field_0x04 = -1;
+    mNo = -1;
     field_0x08 = 0.0f;
     field_0x0c = 0;
 }
@@ -54,16 +54,16 @@ BOOL daObj_Bscurtain_c::CreateHeap() {
 }
 
 /* 00000334-00000370       .text CreateInit__17daObj_Bscurtain_cFv */
-s32 daObj_Bscurtain_c::CreateInit() {
+cPhs_State daObj_Bscurtain_c::CreateInit() {
     set_mtx();
     fopAcM_SetMtx(this, mpModel->getBaseTRMtx());
     return cPhs_COMPLEATE_e;
 }
 
-s32 daObj_Bscurtain_c::_create() {
+cPhs_State daObj_Bscurtain_c::_create() {
     fopAcM_SetupActor(this, daObj_Bscurtain_c);
 
-    s32 ret = dComIfG_resLoad(&mPhs, M_arcname);
+    cPhs_State ret = dComIfG_resLoad(&mPhs, M_arcname);
 
     if (ret == cPhs_COMPLEATE_e) {
         if (fopAcM_entrySolidHeap(this, CheckCreateHeap, 0x10000)) {

@@ -69,7 +69,7 @@ void daBoko_c::setFlameEffect() {
 /* 00001340-000013CC       .text setRoomInfo__8daBoko_cFv */
 void daBoko_c::setRoomInfo() {
     int roomNo;
-    if (mAcch.GetGroundH() != -1e9f) {
+    if (mAcch.GetGroundH() != C_BG_MIN_HEIGHT) {
         roomNo = dComIfG_Bgsp()->GetRoomId(mAcch.m_gnd);
         tevStr.mEnvrIdxOverride = dComIfG_Bgsp()->GetPolyColor(mAcch.m_gnd);
     } else {
@@ -194,7 +194,7 @@ BOOL daBoko_c::procCarry() {
             int i;
             for (i = 0; i < 3; i++) {
                 m_ground_check.SetPos(&current.pos);
-                if (dComIfG_Bgsp()->GroundCross(&m_ground_check) != -1e9f) {
+                if (dComIfG_Bgsp()->GroundCross(&m_ground_check) != C_BG_MIN_HEIGHT) {
                     break;
                 }
                 current.pos.x -= 50.0f * cM_ssin(shape_angle.y);
@@ -251,7 +251,7 @@ BOOL daBoko_c::createHeap() {
 }
 
 /* 00002DE4-00003154       .text create__8daBoko_cFv */
-s32 daBoko_c::create() {
+cPhs_State daBoko_c::create() {
     /* Nonmatching */
     fopAcM_SetupActor(this, daBoko_c);
 }
@@ -261,7 +261,7 @@ daBoko_c::daBoko_c() {
 }
 
 /* 00003824-00003844       .text daBoko_Create__FP10fopAc_ac_c */
-static s32 daBoko_Create(fopAc_ac_c* i_this) {
+static cPhs_State daBoko_Create(fopAc_ac_c* i_this) {
     return static_cast<daBoko_c*>(i_this)->create();
 }
 

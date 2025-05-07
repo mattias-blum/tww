@@ -19,11 +19,11 @@ static BOOL CheckCreateHeap(fopAc_ac_c* i_this) {
 }
 
 /* 00000098-00000164       .text nodeCallBack__FP7J3DNodei */
-static BOOL nodeCallBack(J3DNode* joint, int timing) {
+static BOOL nodeCallBack(J3DNode* joint, int calcTiming) {
     J3DModel* model = j3dSys.getModel();
     s32 jntNo = ((J3DJoint*)joint)->getJntNo();
     daObjLpalm_c* i_this = (daObjLpalm_c*)model->getUserArea();
-    if (timing == 0 && (jntNo == 2 || jntNo == 3)) {
+    if (calcTiming == J3DNodeCBCalcTiming_In && (jntNo == 2 || jntNo == 3)) {
         mDoMtx_stack_c::copy(model->getAnmMtx(jntNo));
         mDoMtx_stack_c::ZrotM(-0x4000);
         mDoMtx_stack_c::quatM(&i_this->mBaseQuat);
@@ -81,10 +81,10 @@ void daObjLpalm_c::CreateInit() {
     mModel->setBaseTRMtx(mDoMtx_stack_c::get());
 }
 
-s32 daObjLpalm_c::_create() {
+cPhs_State daObjLpalm_c::_create() {
     fopAcM_SetupActor(this, daObjLpalm_c);
 
-    s32 ret = dComIfG_resLoad(&mPhs, M_arcname);
+    cPhs_State ret = dComIfG_resLoad(&mPhs, M_arcname);
 
     if (ret == cPhs_COMPLEATE_e) {
         if (fopAcM_entrySolidHeap(this, CheckCreateHeap, 0xf00) == 0) {

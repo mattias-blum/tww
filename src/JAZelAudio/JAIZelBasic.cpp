@@ -1074,7 +1074,7 @@ void JAIZelBasic::changeSeaBgm() {
     
     switch (r3) {
     case 4:
-        field_0x0094 = 0.0f;
+        field_0x0094 = 1.0f;
         bgmStart(checkSeaBgmID(), 0x5A, 1);
         break;
     case 1:
@@ -1532,8 +1532,16 @@ void JAIZelBasic::bgmMute(JAISound**, u32, s32, u32) {
 }
 
 /* 802ABBD0-802ABC3C       .text checkStreamPlaying__11JAIZelBasicFUl */
-int JAIZelBasic::checkStreamPlaying(u32) {
+int JAIZelBasic::checkStreamPlaying(u32 param_1) {
     /* Nonmatching */
+    JAISound* sound = JAInter::StreamMgr::streamUpdate->mpSound;
+    if (!sound) {
+        return false;
+    }
+    if (JAInter::StreamLib::getPlayingFlag() == 0) {
+        return false;
+    }
+    return param_1 == sound->mSoundID;
 }
 
 /* 802ABC3C-802ABC88       .text stWaterLevelUp__11JAIZelBasicFv */
@@ -1721,7 +1729,7 @@ void JAIZelBasic::demoBgmStop(u32) {
 /* 802AC758-802AC788       .text isDemo__11JAIZelBasicFv */
 BOOL JAIZelBasic::isDemo() {
     dDemo_manager_c* demo = dComIfGp_demo_get();
-    if (demo && demo->getMode()) {
+    if (demo && demo->getMode() != 0) {
         return true;
     }
     return false;

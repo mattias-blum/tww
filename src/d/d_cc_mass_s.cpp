@@ -6,6 +6,7 @@
 #include "d/d_cc_mass_s.h"
 #include "d/d_cc_d.h"
 #include "JSystem/JUtility/JUTAssert.h"
+#include "SSystem/SComponent/c_bg_s.h"
 #include "SSystem/SComponent/c_math.h"
 #include "f_op/f_op_actor.h"
 
@@ -19,10 +20,10 @@ void dCcMassS_Mng::Ct() {
     mFlag = 0;
     mResultCam = 0;
     mCamTopPos.x = 0.0f;
-    mCamTopPos.y = -1e+9f;
+    mCamTopPos.y = C_BG_MIN_HEIGHT;
     mCamTopPos.z = 0.0f;
     mCamBottomPos.x = 0.0f;
-    mCamBottomPos.y = -1e+9f;
+    mCamBottomPos.y = C_BG_MIN_HEIGHT;
     mCamBottomPos.z = 0.0f;
     Clear();
 }
@@ -70,13 +71,13 @@ void dCcMassS_Mng::Prepare() {
         mDivideArea.CalcDivideInfo(&mDivideInfo, mCpsAttr.GetWorkAab(), 0);
     }
     mCamTopPos.x = 0.0f;
-    mCamTopPos.y = -1e+9f;
+    mCamTopPos.y = C_BG_MIN_HEIGHT;
     mCamTopPos.z = 0.0f;
-    mCamTopDist = 1e+9f;
+    mCamTopDist = C_BG_MAX_HEIGHT;
     mCamBottomPos.x = 0.0f;
-    mCamBottomPos.y = -1e+9f;
+    mCamBottomPos.y = C_BG_MIN_HEIGHT;
     mCamBottomPos.z = 0.0f;
-    mCamBottomDist = 1e+9f;
+    mCamBottomDist = C_BG_MAX_HEIGHT;
 }
 
 /* 800ACCB8-800AD17C       .text Chk__12dCcMassS_MngFP4cXyzPP10fopAc_ac_cP15dCcMassS_HitInf */
@@ -209,7 +210,7 @@ void dCcMassS_Mng::Clear() {
 
 /* 800AD234-800AD310       .text Set__12dCcMassS_MngFP8cCcD_ObjUc */
 void dCcMassS_Mng::Set(cCcD_Obj* i_obj, u8 i_priority) {
-    if (mMassObjCount >= 5) {
+    if (mMassObjCount >= (s32)ARRAY_SIZE(mMassObjs)) {
         for (int i = 0; i < (s32)ARRAY_SIZE(mMassObjs); i++) {
             int priority = mMassObjs[i].GetPriority();
             if (priority > i_priority || (priority == i_priority && cM_rndF(1.0f) < 0.5f)) {

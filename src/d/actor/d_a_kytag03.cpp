@@ -14,7 +14,7 @@ static BOOL useHeapInit(fopAc_ac_c* i_ac) {
     kytag03_class* i_this = (kytag03_class*)i_ac;
     i_this->mpModel = new mDoExt_McaMorf(
         (J3DModelData*)dComIfG_getObjectRes("M_DOOR", M_DOOR_BDL_MYAMIF),
-        NULL, NULL, NULL, J3DFrameCtrl::LOOP_REPEAT_e, 0.0f, 0, -1, 1, NULL, 0x0, 0x11020203
+        NULL, NULL, NULL, J3DFrameCtrl::EMode_LOOP, 0.0f, 0, -1, 1, NULL, 0x0, 0x11020203
     );
 
     if (i_this->mpModel == NULL || i_this->mpModel->getModel() == NULL)
@@ -50,8 +50,8 @@ static BOOL daKytag03_Execute(kytag03_class* i_this) {
     if (!dComIfGp_event_runCheck() || !dComIfGp_event_chkEventFlag(dEvtFlag_STAFF_ALL_e)) {
         if (i_this->tevStr.mRoomNo == dStage_roomControl_c::getStayNo()) {
             i_this->mbRoomActive = true;
-            if (i_this->mSwitchID != 0xFF) {
-                if (dComIfGs_isSwitch(i_this->mSwitchID, dStage_roomControl_c::getStayNo())) {
+            if (i_this->mSwitchNo != 0xFF) {
+                if (dComIfGs_isSwitch(i_this->mSwitchNo, dStage_roomControl_c::getStayNo())) {
                     if (!dKy_contrast_flg_get()) {
                         dKy_contrast_flg_set(true);
                         dKy_change_colpat(4);
@@ -70,8 +70,8 @@ static BOOL daKytag03_Execute(kytag03_class* i_this) {
         }
     } else if (!i_this->mbRoomActive) {
         if (i_this->tevStr.mRoomNo != dStage_roomControl_c::getStayNo()) {
-            if (i_this->mSwitchID != 0xFF) {
-                if (dComIfGs_isSwitch(i_this->mSwitchID, i_this->tevStr.mRoomNo)) {
+            if (i_this->mSwitchNo != 0xFF) {
+                if (dComIfGs_isSwitch(i_this->mSwitchNo, i_this->tevStr.mRoomNo)) {
                     if (!dKy_contrast_flg_get()) {
                         dKy_contrast_flg_set(true);
                         dKy_change_colpat(4);
@@ -124,10 +124,10 @@ static BOOL daKytag03_Delete(kytag03_class* i_this) {
 }
 
 /* 00000544-00000604       .text daKytag03_Create__FP10fopAc_ac_c */
-static s32 daKytag03_Create(fopAc_ac_c* i_ac) {
+static cPhs_State daKytag03_Create(fopAc_ac_c* i_ac) {
     kytag03_class* i_this = (kytag03_class*)i_ac;
     fopAcM_SetupActor(i_this, kytag03_class);
-    s32 ret = dComIfG_resLoad(&i_this->mPhs, "M_DOOR");
+    cPhs_State ret = dComIfG_resLoad(&i_this->mPhs, "M_DOOR");
     if (ret == cPhs_COMPLEATE_e) {
         if (!fopAcM_entrySolidHeap(i_this, useHeapInit, 0x4c30)) {
             return cPhs_ERROR_e;
@@ -135,7 +135,7 @@ static s32 daKytag03_Create(fopAc_ac_c* i_ac) {
 
         i_this->field_0x2a0 = 0;
         i_this->field_0x2a8 = 0.0f;
-        i_this->mSwitchID = fopAcM_GetParam(i_this);
+        i_this->mSwitchNo = fopAcM_GetParam(i_this);
         i_this->mbRoomActive = false;
         i_this->mbIsActive = false;
         i_this->mbVisible = false;

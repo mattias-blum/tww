@@ -21,8 +21,8 @@ const u32 daYgcwp_c::M_brk_table[] = {
 };
 
 const u32 daYgcwp_c::M_brk_mode_table[] = {
-    J3DFrameCtrl::LOOP_REPEAT_e,
-    J3DFrameCtrl::LOOP_ONCE_e,
+    J3DFrameCtrl::EMode_LOOP,
+    J3DFrameCtrl::EMode_NONE,
 };
 
 const char daYgcwp_c::M_arcname[6] = "Ygcwp";
@@ -33,7 +33,7 @@ static void dummy() {
     OSReport("fg_warp1");
 }
 
-static const char* M_act_table[] = {
+static char* M_act_table[] = {
     "warp_start",
     "warp_appear",
     "warp_make",
@@ -76,9 +76,9 @@ BOOL daYgcwp_c::create_heap() {
 }
 
 /* 0000023C-000003A0       .text _create__9daYgcwp_cFv */
-s32 daYgcwp_c::_create() {
+cPhs_State daYgcwp_c::_create() {
     fopAcM_SetupActor(this, daYgcwp_c);
-    s32 rt = dComIfG_resLoad(&mPhs, M_arcname);
+    cPhs_State rt = dComIfG_resLoad(&mPhs, M_arcname);
     if (rt == cPhs_COMPLEATE_e) {
         rt = cPhs_ERROR_e;
         if (fopAcM_entrySolidHeap(this, solidHeapCB, 0)) {
@@ -128,12 +128,12 @@ void daYgcwp_c::init_mtx() {
 
 /* 00000588-000005F0       .text make_shine__9daYgcwp_cFv */
 void daYgcwp_c::make_shine() {
-    dComIfGp_particle_set(0x8316, &current.pos, NULL, &scale);
+    dComIfGp_particle_set(dPa_name::ID_SCENE_8316, &current.pos, NULL, &scale);
 }
 
 /* 000005F0-00000654       .text set_timer__9daYgcwp_cFv */
 void daYgcwp_c::set_timer() {
-    s32* a_intP = (s32*)dComIfGp_evmng_getMyIntegerP(mStaffId, "Timer");
+    int* a_intP = dComIfGp_evmng_getMyIntegerP(mStaffId, "Timer");
     mTimer = 0;
     if (a_intP != NULL)
         mTimer = *a_intP;
@@ -144,7 +144,7 @@ bool daYgcwp_c::_execute() {
     daPy_py_c* player = daPy_getPlayerActorClass();
     mStaffId = dComIfGp_evmng_getMyStaffId(M_arcname);
     if (mStaffId != -1) {
-        int actIdx = dComIfGp_evmng_getMyActIdx(mStaffId, (char**)M_act_table, ARRAY_SIZE(M_act_table), FALSE, 0);
+        int actIdx = dComIfGp_evmng_getMyActIdx(mStaffId, M_act_table, ARRAY_SIZE(M_act_table), FALSE, 0);
         if (dComIfGp_evmng_getIsAddvance(mStaffId)) {
             switch (actIdx) {
             case EVENT_WARP_START:
@@ -202,7 +202,7 @@ bool daYgcwp_c::_draw() {
 
 namespace {
 /* 000008DC-000008FC       .text Mthd_Create__23@unnamed@d_a_ygcwp_cpp@FPv */
-s32 Mthd_Create(void* i_ac) {
+cPhs_State Mthd_Create(void* i_ac) {
     return ((daYgcwp_c*)i_ac)->_create();
 }
 

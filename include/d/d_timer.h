@@ -33,6 +33,11 @@ public:
     bool hide();
     void draw();
 
+    f32 acc(s16 param_0, s16 param_1, s16 param_2) {
+        return ((f32)(param_1 - param_2) * (f32)(param_1 - param_2)) / ((f32)(param_0 - param_2) * (f32)(param_0 - param_2));
+    }
+    void animeTimerReset() {}
+
 public:
     /* 0x004 */ J2DScreen* scrn;
     /* 0x008 */ fopMsgM_pane_class mClockIcon;
@@ -57,7 +62,7 @@ public:
 
 class dTimer_c : public msg_class {
 public:
-    s32 _create();
+    cPhs_State _create();
     BOOL _execute();
     BOOL _draw();
     BOOL _delete();

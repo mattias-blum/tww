@@ -132,21 +132,21 @@ void daWall_c::CreateInit() {
     dComIfG_Bgsp()->Regist(mpBgW, this);
     set_mtx();
     mpBgW->Move();
-    mSwitchIndex = fopAcM_GetParam(this) & 0xFF;
+    mSwitchNo = fopAcM_GetParam(this) & 0xFF;
     mState = false;
 }
 
 /* 00000380-000004EC       .text _create__8daWall_cFv */
-s32 daWall_c::_create() {
+cPhs_State daWall_c::_create() {
     fopAcM_SetupActor(this, daWall_c);
     mType = fopAcM_GetParam(this) >> 8;
-    mSwitchIndex = fopAcM_GetParam(this) & 0xFF;
-    bool isSwitch = dComIfGs_isSwitch(mSwitchIndex, fopAcM_GetHomeRoomNo(this));
-    if (isSwitch || mSwitchIndex == 0xff) {
+    mSwitchNo = fopAcM_GetParam(this) & 0xFF;
+    bool isSwitch = dComIfGs_isSwitch(mSwitchNo, fopAcM_GetHomeRoomNo(this));
+    if (isSwitch || mSwitchNo == 0xff) {
         return cPhs_ERROR_e;
     }
 
-    s32 phase_state = dComIfG_resLoad(&mPhs, m_arcname[mType]);
+    cPhs_State phase_state = dComIfG_resLoad(&mPhs, m_arcname[mType]);
 
     if (phase_state == cPhs_COMPLEATE_e) {
         if (!fopAcM_entrySolidHeap(this, CheckCreateHeap, m_heapsize[mType])) {
@@ -183,7 +183,7 @@ bool daWall_c::_execute() {
     };
 
     (this->*mode_proc[mState])();
-    return 1;
+    return true;
 }
 
 /* 00000980-00000A58       .text mode_wait__8daWall_cFv */
@@ -218,7 +218,7 @@ void daWall_c::mode_break() {
                 fopAcM_delete(this);
             }
 
-            JPABaseEmitter* pEmitter = mSmokeCb.mpEmitter;
+            JPABaseEmitter* pEmitter = mSmokeCb.getEmitter();
             if (pEmitter != NULL) {
                 pEmitter->setGlobalAlpha(mDst);
             }
@@ -263,8 +263,16 @@ void daWall_c::set_tri() {
 
 /* 00000D84-00000F74       .text set_effect__8daWall_cFv */
 void daWall_c::set_effect() {
-    u16 projection_id[3] = {0xa16e, 0xa170, 0xa172};
-    u16 particle_id[3] = {0xa16f, 0xa171, 0xa173};
+    u16 projection_id[] = {
+        dPa_name::ID_SCENE_A16E,
+        dPa_name::ID_SCENE_A170,
+        dPa_name::ID_SCENE_A172,
+    };
+    u16 particle_id[] = {
+        dPa_name::ID_SCENE_A16F,
+        dPa_name::ID_SCENE_A171,
+        dPa_name::ID_SCENE_A173,
+    };
 
     csXyz local_28 = current.angle;
     local_28.y += 0x8000;
@@ -293,8 +301,8 @@ void daWall_c::set_effect() {
     mBreakCounter = 1;
     mState = 1;
     dComIfG_Bgsp()->Release(mpBgW);
-    if (mSwitchIndex != 0xFF)
-        dComIfGs_onSwitch(mSwitchIndex, fopAcM_GetHomeRoomNo(this));
+    if (mSwitchNo != 0xFF)
+        dComIfGs_onSwitch(mSwitchNo, fopAcM_GetHomeRoomNo(this));
 }
 
 /* 00000F74-00000FE4       .text set_se__8daWall_cFv */
@@ -311,7 +319,7 @@ bool daWall_c::_draw() {
 }
 
 /* 00001044-00001064       .text daWall_Create__FPv */
-static s32 daWall_Create(void* i_this) {
+static cPhs_State daWall_Create(void* i_this) {
     return ((daWall_c*)i_this)->_create();
 }
 

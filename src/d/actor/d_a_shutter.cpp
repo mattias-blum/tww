@@ -44,7 +44,7 @@ static BOOL CheckCreateHeap(fopAc_ac_c* i_this) {
 /* 00000128-000002B8       .text CreateHeap__11daShutter_cFv */
 BOOL daShutter_c::CreateHeap() {
     J3DModelData* modelData = (J3DModelData *)dComIfG_getObjectRes(m_arcname[mType], m_bdlidx[mType]);
-    JUT_ASSERT(0x121, modelData != 0);
+    JUT_ASSERT(0x121, modelData != NULL);
     for (int i = 0; i < (int)ARRAY_SIZE(mMtx); i++) {
         mpModel[i] = mDoExt_J3DModel__create(modelData, 0x80000, 0x11000022);
         if (!mpModel[i]) {
@@ -53,7 +53,7 @@ BOOL daShutter_c::CreateHeap() {
         mdBgW[i] = new dBgW();
         if (mdBgW[i]) {
             cBgD_t* pData = (cBgD_t *)dComIfG_getObjectRes(m_arcname[mType], m_dzbidx[mType]);
-            if (mdBgW[i]->Set(pData, 0x1, &mMtx[i]) == 1) {
+            if (mdBgW[i]->Set(pData, cBgW::MOVE_BG_e, &mMtx[i]) == true) {
                 return FALSE;
             }
         }
@@ -65,7 +65,7 @@ BOOL daShutter_c::CreateHeap() {
 }
 
 /* 000002B8-000004B4       .text Create__11daShutter_cFv */
-s32 daShutter_c::Create() {
+BOOL daShutter_c::Create() {
     fopAcM_SetMtx(this, mpModel[0]->getBaseTRMtx());
     Vec cullMin = m_cull_min[mType];
     Vec cullMax = m_cull_max[mType];
@@ -93,14 +93,14 @@ s32 daShutter_c::Create() {
     if (m_close_ev_name[mType] != NULL) {
         mCloseEventIdx = dComIfGp_evmng_getEventIdx(m_close_ev_name[mType], 0xff);
     }
-    return 1;
+    return TRUE;
 }
 
 /* 000004B4-000005A0       .text _create__11daShutter_cFv */
-s32 daShutter_c::_create() {
+cPhs_State daShutter_c::_create() {
     fopAcM_SetupActor(this, daShutter_c);
     mType = daShutter_prm::getType(this);
-    int result = dComIfG_resLoad(&mPhs, m_arcname[mType]);
+    cPhs_State result = dComIfG_resLoad(&mPhs, m_arcname[mType]);
     if (result == cPhs_COMPLEATE_e) {
         if (!fopAcM_entrySolidHeap(this, CheckCreateHeap, m_heapsize[mType])){
             return cPhs_ERROR_e;
@@ -142,32 +142,43 @@ bool daShutter_c::_execute() {
 
 /* 00000788-00000B14       .text shutter_move__11daShutter_cFv */
 void daShutter_c::shutter_move() {
-    static char* action_table[] = {"WAIT", "WAIT02", "OPEN", "CLOSE"};
+    static char* action_table[] = {
+        "WAIT",
+        "WAIT02",
+        "OPEN",
+        "CLOSE",
+    };
+    enum {
+        ACT_WAIT,
+        ACT_WAIT02,
+        ACT_OPEN,
+        ACT_CLOSE,
+    };
     int actionIndex = dComIfGp_evmng_getMyActIdx(mStaffId, action_table, ARRAY_SIZE(action_table), FALSE, 0);
 
-    float maxVel = m_max_speed[mType];;
+    float maxVel = m_max_speed[mType];
     float minVel = m_min_speed[mType];
 
     float fVar4;
     float fVar5;
 
     switch (actionIndex) {
-        case 0: //WAIT
+        case ACT_WAIT:
         {
             mTimer = 0xf;
             field_0x33A = 0;
             dComIfGp_evmng_cutEnd(mStaffId);
-            return;
+            break;
         }
-        case 1: //WAIT02
+        case ACT_WAIT02:
         {
-            if (!cLib_calcTimer(&mTimer)) {
+            if (cLib_calcTimer(&mTimer) == 0) {
                 field_0x339 = 0;
                 dComIfGp_evmng_cutEnd(mStaffId);
             }
-            return;
+            break;
         }
-        case 2: //OPEN
+        case ACT_OPEN:
         {
             field_0x33A++;
             if (field_0x339 == 0) {
@@ -183,15 +194,15 @@ void daShutter_c::shutter_move() {
                 dComIfGp_getVibration().StartShock(4, -0x21, cXyz(0.0f, 1.0f, 0.0f));
             }
             if (fVar4 != 0.0f){
-                return;
+                break;
             } 
             if (fVar5 != 0.0f) {
-                return;
+                break;
             }
             dComIfGp_evmng_cutEnd(mStaffId);
-            return;
+            break;
         }
-        case 3: //CLOSE
+        case ACT_CLOSE:
         {
             if (field_0x339 == 0) {
                 field_0x339 = 1;
@@ -199,16 +210,20 @@ void daShutter_c::shutter_move() {
             fVar4 = cLib_addCalc(&mcXyz[0].x, -m_width[mType] / 2.0f, 0.1f, maxVel, minVel);
             fVar5 = cLib_addCalc(&mcXyz[1].x, m_width[mType] / 2.0f, 0.1f, maxVel, minVel);
             if (fVar4 != 0.0f) {
-                return;
+                break;
             }
             if (fVar5 != 0.0f) {
-                return;
+                break;
             }
             dComIfGp_evmng_cutEnd(mStaffId);
-            return;
+            break;
+        }
+        default:
+        {
+            dComIfGp_evmng_cutEnd(mStaffId);
+            break;
         }
     }
-    dComIfGp_evmng_cutEnd(mStaffId);
 }
 
 /* 00000B14-00000CF0       .text demo__11daShutter_cFv */
@@ -263,7 +278,7 @@ bool daShutter_c::_draw() {
 }
 
 /* 00000DD8-00000DF8       .text daShutter_Create__FPv */
-static s32 daShutter_Create(void* i_this) {
+static cPhs_State daShutter_Create(void* i_this) {
     return ((daShutter_c*)i_this)->_create();
 }
 

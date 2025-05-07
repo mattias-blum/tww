@@ -111,7 +111,7 @@ bool daObjFerris::Act_c::create_heap() {
     if (bgw_data_gondola != NULL) {
         for (i = 0; i < 5; i++) {
             mpBgW[i] = new dBgW();
-            if (mpBgW[i] != NULL && mpBgW[i]->Set(bgw_data_gondola, dBgW::MOVE_BG_e, &mMtx[i]) == 1)
+            if (mpBgW[i] != NULL && mpBgW[i]->Set(bgw_data_gondola, dBgW::MOVE_BG_e, &mMtx[i]) == true)
                 return false;
         }
     }
@@ -120,7 +120,7 @@ bool daObjFerris::Act_c::create_heap() {
     JUT_ASSERT(0x1b0, bgw_data_wheelbase != NULL);
     if (bgw_data_wheelbase != NULL) {
         mpBgW[5] = new dBgW();
-        if (mpBgW[5] != NULL && mpBgW[5]->Set(bgw_data_wheelbase, dBgW::MOVE_BG_e, &mMtx[5]) == 1)
+        if (mpBgW[5] != NULL && mpBgW[5]->Set(bgw_data_wheelbase, dBgW::MOVE_BG_e, &mMtx[5]) == true)
             return false;
     }
 
@@ -143,10 +143,10 @@ void daObjFerris::Act_c::ride_call_back(dBgW* bgw, fopAc_ac_c* i_ac, fopAc_ac_c*
 }
 
 /* 000004DC-00000898       .text _create__Q211daObjFerris5Act_cFv */
-s32 daObjFerris::Act_c::_create() {
+cPhs_State daObjFerris::Act_c::_create() {
     fopAcM_SetupActor(this, Act_c);
 
-    s32 ret = dComIfG_resLoad(&mPhs, M_arcname);
+    cPhs_State ret = dComIfG_resLoad(&mPhs, M_arcname);
 
     s32 i;
     if (ret == cPhs_COMPLEATE_e) {
@@ -526,7 +526,7 @@ bool daObjFerris::Act_c::_draw() {
 
 namespace daObjFerris {
     namespace {
-        s32 Mthd_Create(void* i_this) {
+        cPhs_State Mthd_Create(void* i_this) {
             return ((Act_c*)i_this)->_create();
         }
 

@@ -4,13 +4,14 @@
  */
 
 #include "d/actor/d_a_npc_os.h"
-#include "d/res/res_os.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_procname.h"
+#include "d/actor/d_a_player_main.h"
+#include "d/actor/d_a_pedestal.h"
+#include "d/res/res_os.h"
 #include "f_op/f_op_actor_mng.h"
 #include "f_op/f_op_camera.h"
 #include "m_Do/m_Do_controller_pad.h"
-#include "d/actor/d_a_player_main.h"
 
 #include "weak_bss_936_to_1036.h" // IWYU pragma: keep
 #include "weak_data_1811.h" // IWYU pragma: keep
@@ -121,7 +122,7 @@ daNpc_Os_HIO_c::daNpc_Os_HIO_c() {
     field_0xA8 = 0.75f;
     field_0xAC = 18.0f;
     field_0xB0 = 8.0f;
-    field_0x04 = -1;
+    mNo = -1;
 }
 
 /* 00000300-00000354       .text searchFromName__FPcUlUl */
@@ -141,12 +142,12 @@ static BOOL CheckCreateHeap(fopAc_ac_c* i_this) {
 }
 
 /* 00000374-00000538       .text create__10daNpc_Os_cFv */
-s32 daNpc_Os_c::create() {
+cPhs_State daNpc_Os_c::create() {
     fopAcM_SetupActor(this, daNpc_Os_c)
 
     static u32 l_heap_size = 0xFA0;
 
-    int result = dComIfG_resLoad(&mPhs, "Os");
+    cPhs_State result = dComIfG_resLoad(&mPhs, "Os");
     if(result == cPhs_COMPLEATE_e) {
         if(!fopAcM_entrySolidHeap(this, CheckCreateHeap, l_heap_size)) {
             mpMorf = NULL;
@@ -165,8 +166,8 @@ s32 daNpc_Os_c::create() {
 
         setBaseMtx();
         fopAcM_SetMtx(this, mpMorf->mpModel->getBaseTRMtx());
-        if(l_HIO.field_0x04 < 0) {
-            l_HIO.field_0x04 = mDoHIO_createChild("お供石像", &l_HIO); // "Companion Statue" (otomo sekizou)
+        if(l_HIO.mNo < 0) {
+            l_HIO.mNo = mDoHIO_createChild("お供石像", &l_HIO); // "Companion Statue" (otomo sekizou)
             l_HIO.field_0x5C = this;
             l_hio_counter = 1;
         }
@@ -185,8 +186,8 @@ s32 daNpc_Os_c::create() {
 }
 
 /* 00000748-000008CC       .text nodeCallBack__FP7J3DNodei */
-static BOOL nodeCallBack(J3DNode* node, int param_1) {
-    if (!param_1) {
+static BOOL nodeCallBack(J3DNode* node, int calcTiming) {
+    if (calcTiming == J3DNodeCBCalcTiming_In) {
         J3DModel* model = j3dSys.getModel();
         J3DJoint* joint = (J3DJoint*)node;
         daNpc_Os_c* i_this = (daNpc_Os_c*)model->getUserArea();
@@ -210,8 +211,8 @@ static BOOL nodeCallBack(J3DNode* node, int param_1) {
 }
 
 /* 000008CC-00000988       .text tunoNodeCallBack__FP7J3DNodei */
-static BOOL tunoNodeCallBack(J3DNode* node, int param_1) {
-    if (!param_1) {
+static BOOL tunoNodeCallBack(J3DNode* node, int calcTiming) {
+    if (calcTiming == J3DNodeCBCalcTiming_In) {
         J3DJoint* joint = (J3DJoint*)node;
         J3DModel* model = j3dSys.getModel();
         daNpc_Os_c* i_this = (daNpc_Os_c*)model->getUserArea();
@@ -238,7 +239,7 @@ BOOL daNpc_Os_c::createHeap() {
         modelData,
         NULL, NULL,
         static_cast<J3DAnmTransformKey*>(dComIfG_getObjectRes("Os", OS_BCK_OS_MOVE01)),
-        J3DFrameCtrl::LOOP_REPEAT_e, 1.0f, 0, -1, 1,
+        J3DFrameCtrl::EMode_LOOP, 1.0f, 0, -1, 1,
         NULL,
         0x00080000,
         0x11000002
@@ -500,7 +501,7 @@ void daNpc_Os_c::eventOrderCheck() {
 /* 00001300-000013D4       .text makeBeam__10daNpc_Os_cFi */
 void daNpc_Os_c::makeBeam(int param_1) {
     if(field_0x738.getEmitter() == NULL) {
-        field_0x738.makeEmitter(0x826E, &current.pos, &shape_angle, 0);
+        field_0x738.makeEmitter(dPa_name::ID_SCENE_826E, &current.pos, &shape_angle, 0);
 
         if(param_1) {
             fopAcM_seStartCurrent(this, JA_SE_OBJ_OSTATUE_LIGHT_ST, 0);
@@ -508,7 +509,7 @@ void daNpc_Os_c::makeBeam(int param_1) {
     }
 
     if(field_0x740.getEmitter() == NULL) {
-        field_0x740.makeEmitter(0x826F, &current.pos, &shape_angle, 0);
+        field_0x740.makeEmitter(dPa_name::ID_SCENE_826F, &current.pos, &shape_angle, 0);
     }
 }
 
@@ -592,9 +593,9 @@ void daNpc_Os_c::playerAction(void* param_1) {
         setPlayerAction(&daNpc_Os_c::waitPlayerAction, 0);
     }
 
-    dComIfGp_setRStatusForce(7);
-    dComIfGp_setDoStatus(0x3E);
-    dComIfGp_setAStatus(0x3E);
+    dComIfGp_setRStatusForce(dActStts_RETURN_e);
+    dComIfGp_setDoStatus(dActStts_HIDDEN_e);
+    dComIfGp_setAStatus(dActStts_HIDDEN_e);
 
     (this->*mPlayerAction)(param_1);
 }
@@ -694,7 +695,7 @@ BOOL daNpc_Os_c::waitNpcAction(void*) {
             }
         }
         else {
-            attention_info.flags |= fopAc_Attn_ACTION_CARRY_e;
+            cLib_onBit<u32>(attention_info.flags, fopAc_Attn_ACTION_CARRY_e);
             s16 angle = shape_angle.y + mJntCtrl.getHead_y() + mJntCtrl.getBackbone_y();
             field_0x7A4 = chkAttention(current.pos, angle);
 
@@ -709,7 +710,7 @@ BOOL daNpc_Os_c::waitNpcAction(void*) {
             }
         }
 
-        attention_info.flags &= ~(fopAc_Attn_LOCKON_TALK_e | fopAc_Attn_ACTION_SPEAK_e);
+        cLib_offBit<u32>(attention_info.flags, (fopAc_Attn_LOCKON_TALK_e | fopAc_Attn_ACTION_SPEAK_e));
 
         f32 dist = fopAcM_searchPlayerDistance2(this);
         if(!checkNpcCallCommand()) {
@@ -800,7 +801,7 @@ BOOL daNpc_Os_c::talkNpcAction(void*) {
     if(field_0x7A9 == 0) {
         l_msgId = -1;
         field_0x780 = getMsg();
-        attention_info.flags &= ~fopAc_Attn_ACTION_CARRY_e;
+        cLib_offBit<u32>(attention_info.flags, fopAc_Attn_ACTION_CARRY_e);
         field_0x7A3 = 0;
         field_0x7A9 += 1;
     }
@@ -837,7 +838,7 @@ BOOL daNpc_Os_c::carryNpcAction(void* param_1) {
     if(field_0x7A9 == 0) {
         setAnm(0);
 
-        attention_info.flags &= ~fopAc_Attn_ACTION_CARRY_e;
+        cLib_offBit<u32>(attention_info.flags, fopAc_Attn_ACTION_CARRY_e);
         offNpcCallCommand();
         field_0x7AC = shape_angle.y - dComIfGp_getPlayer(0)->shape_angle.y;
         field_0x788 = 120.0f;
@@ -872,7 +873,7 @@ BOOL daNpc_Os_c::carryNpcAction(void* param_1) {
             }
             else {
                 fopAcM_seStartCurrent(this, JA_SE_OBJ_OSTATUE_PUT, 0);
-                smokeSet(0xA328);
+                smokeSet(dPa_name::ID_SCENE_A328);
                 setNpcAction(&daNpc_Os_c::waitNpcAction, 0);
 
                 return true;
@@ -907,7 +908,7 @@ BOOL daNpc_Os_c::throwNpcAction(void* param_1) {
     else if(field_0x7A9 != -1) {
         if(mAcch.ChkGroundHit()) {
             fopAcM_seStartCurrent(this, JA_SE_OBJ_OSTATUE_PUT, 0);
-            smokeSet(0xA33B);
+            smokeSet(dPa_name::ID_SCENE_A33B);
             setNpcAction(&daNpc_Os_c::waitNpcAction, 0);
         }
 
@@ -933,7 +934,7 @@ BOOL daNpc_Os_c::jumpNpcAction(void* param_1) {
     }
     else if(field_0x7A9 != -1) {
         if(mAcch.ChkGroundHit()) {
-            smokeSet(0xA33B);
+            smokeSet(dPa_name::ID_SCENE_A33B);
             setNpcAction(&daNpc_Os_c::waitNpcAction, 0);
         }
 
@@ -1052,7 +1053,7 @@ BOOL daNpc_Os_c::routeCheck(f32 param_1, s16* param_2) {
 /* 0000375C-000039EC       .text searchNpcAction__10daNpc_Os_cFPv */
 BOOL daNpc_Os_c::searchNpcAction(void*) {
     if(field_0x7A9 == 0) {
-        attention_info.flags |= fopAc_Attn_ACTION_CARRY_e;
+        cLib_onBit<u32>(attention_info.flags, fopAc_Attn_ACTION_CARRY_e);
         setAnm(1);
         
         field_0x7A9 += 1;
@@ -1346,26 +1347,26 @@ void daNpc_Os_c::initialWaitEvent(int staffIdx) {
         current.pos.set(posData->x, posData->y, posData->z);
     }
 
-    u32* angleData = dComIfGp_evmng_getMyIntegerP(staffIdx, "angle");
+    int* angleData = dComIfGp_evmng_getMyIntegerP(staffIdx, "angle");
     if(angleData) {
         s16 angle = *angleData;
         current.angle.y = angle;
         shape_angle.y = angle;
     }
 
-    u32* gravData = dComIfGp_evmng_getMyIntegerP(staffIdx, "gravity");
+    int* gravData = dComIfGp_evmng_getMyIntegerP(staffIdx, "gravity");
     if(gravData) {
         onGravity();
         maxFallSpeed = -100.0f;
         gravity = l_HIO.field_0x8C;
     }
 
-    u32* quakeData = dComIfGp_evmng_getMyIntegerP(staffIdx, "quake");
+    int* quakeData = dComIfGp_evmng_getMyIntegerP(staffIdx, "quake");
     if(quakeData) {
         dComIfGp_getVibration().StartShock(*quakeData, -0x11, cXyz(0.0f, 1.0f, 0.0f));
     }
 
-    u32* timerData = dComIfGp_evmng_getMyIntegerP(staffIdx, "timer");
+    int* timerData = dComIfGp_evmng_getMyIntegerP(staffIdx, "timer");
     if(timerData) {
         field_0x7C0 = *timerData;
     }
@@ -1438,7 +1439,7 @@ BOOL daNpc_Os_c::actionMoveEvent(int staffIdx) {
 
 /* 00004644-000046E4       .text initialMoveEndEvent__10daNpc_Os_cFi */
 void daNpc_Os_c::initialMoveEndEvent(int staffIdx) {
-    u32* data = dComIfGp_evmng_getMyIntegerP(staffIdx, "Daiza");
+    int* data = dComIfGp_evmng_getMyIntegerP(staffIdx, "Daiza");
     if(data && mpPedestal) {
         current.pos.x = mpPedestal->current.pos.x;
         current.pos.y = mpPedestal->current.pos.y + 240.0f;
@@ -1465,7 +1466,7 @@ void daNpc_Os_c::initialTurnEvent(int) {
 
 /* 0000474C-000047D4       .text actionTurnEvent__10daNpc_Os_cFi */
 BOOL daNpc_Os_c::actionTurnEvent(int staffIdx) {
-    u32* data = dComIfGp_evmng_getMyIntegerP(staffIdx, "Angle");
+    int* data = dComIfGp_evmng_getMyIntegerP(staffIdx, "Angle");
     if(data) {
         s16 temp = cLib_addCalcAngleS(&shape_angle.y, *data, 0x1E, 0x2000, 0x800);
         current.angle.y = shape_angle.y;
@@ -1480,7 +1481,7 @@ BOOL daNpc_Os_c::actionTurnEvent(int staffIdx) {
 
 /* 000047D4-00004860       .text initialFinishEvent__10daNpc_Os_cFi */
 void daNpc_Os_c::initialFinishEvent(int staffIdx) {
-    u32* data = dComIfGp_evmng_getMyIntegerP(staffIdx, "Type");
+    int* data = dComIfGp_evmng_getMyIntegerP(staffIdx, "Type");
 
     u32 value = 0;
     if(data) {
@@ -1505,7 +1506,7 @@ BOOL daNpc_Os_c::actionFinishEvent(int) {
 void daNpc_Os_c::initialMsgSetEvent(int staffIdx) {
     l_msgId = -1;
 
-    u32* data = dComIfGp_evmng_getMyIntegerP(staffIdx, "MsgNo");
+    int* data = dComIfGp_evmng_getMyIntegerP(staffIdx, "MsgNo");
     if(data) {
         field_0x780 = *data;
     }
@@ -1531,7 +1532,7 @@ void daNpc_Os_c::initialSwitchOnEvent(int) {
 
 /* 00004988-00004A60       .text initialNextEvent__10daNpc_Os_cFi */
 void daNpc_Os_c::initialNextEvent(int staffIdx) {
-    u32* data = dComIfGp_evmng_getMyIntegerP(staffIdx, "SE");
+    int* data = dComIfGp_evmng_getMyIntegerP(staffIdx, "SE");
 
     if(data) {
         u32 value = *data;
@@ -1607,35 +1608,35 @@ void daNpc_Os_c::setAnm(int param_1) {
     static anmPrm_c l_anmPrm[] = {
         {
             /* mAnmTblIdx */ 0,
-            /* mLoopMode  */ J3DFrameCtrl::LOOP_REPEAT_e,
+            /* mLoopMode  */ J3DFrameCtrl::EMode_LOOP,
             /* mMorf      */ 8.0f,
             /* mPlaySpeed */ 0.0f,
             /* m10        */ 0,
         },
         {
             /* mAnmTblIdx */ 1,
-            /* mLoopMode  */ J3DFrameCtrl::LOOP_REPEAT_e,
+            /* mLoopMode  */ J3DFrameCtrl::EMode_LOOP,
             /* mMorf      */ 8.0f,
             /* mPlaySpeed */ 2.0f,
             /* m10        */ 0,
         },
         {
             /* mAnmTblIdx */ 2,
-            /* mLoopMode  */ J3DFrameCtrl::LOOP_ONCE_e,
+            /* mLoopMode  */ J3DFrameCtrl::EMode_NONE,
             /* mMorf      */ 0.0f,
             /* mPlaySpeed */ 1.0f,
             /* m10        */ 0,
         },
         {
             /* mAnmTblIdx */ 2,
-            /* mLoopMode  */ J3DFrameCtrl::LOOP_ONCE_e,
+            /* mLoopMode  */ J3DFrameCtrl::EMode_NONE,
             /* mMorf      */ 0.0f,
             /* mPlaySpeed */ -1.0f,
             /* m10        */ 0,
         },
         {
             /* mAnmTblIdx */ 2,
-            /* mLoopMode  */ J3DFrameCtrl::LOOP_ONCE_e,
+            /* mLoopMode  */ J3DFrameCtrl::EMode_NONE,
             /* mMorf      */ 0.0f,
             /* mPlaySpeed */ 0.0f,
             /* m10        */ -1,
@@ -1681,15 +1682,15 @@ BOOL daNpc_Os_c::initBrkAnm(u8 param_1, bool param_2) {
     };  // Size: 0x10
 
     static AnmTableEntry brkAnmTbl[] = {
-        {OS_BRK_TURN_OFF, J3DFrameCtrl::LOOP_ONCE_e,   1.0f,  0},
-        {OS_BRK_TURN_OFF, J3DFrameCtrl::LOOP_ONCE_e,   1.0f,  -1},
-        {OS_BRK_OS_AWAKE, J3DFrameCtrl::LOOP_ONCE_e,   1.0f,  0},
-        {OS_BRK_OS_AWAKE, J3DFrameCtrl::LOOP_ONCE_e,   -1.0f, 0},
-        {OS_BRK_TURN_ON,  J3DFrameCtrl::LOOP_ONCE_e,   1.0f,  0},
-        {OS_BRK_TURN_ON,  J3DFrameCtrl::LOOP_ONCE_e,   0.0f,  0},
-        {OS_BRK_TENMETU,  J3DFrameCtrl::LOOP_REPEAT_e, 1.0f,  0},
-        {OS_BRK_OS_AWAKE, J3DFrameCtrl::LOOP_ONCE_e,   0.0f,  -1},
-        {OS_BRK_LINK,     J3DFrameCtrl::LOOP_REPEAT_e, 1.0f,  0},
+        {OS_BRK_TURN_OFF, J3DFrameCtrl::EMode_NONE,   1.0f,  0},
+        {OS_BRK_TURN_OFF, J3DFrameCtrl::EMode_NONE,   1.0f,  -1},
+        {OS_BRK_OS_AWAKE, J3DFrameCtrl::EMode_NONE,   1.0f,  0},
+        {OS_BRK_OS_AWAKE, J3DFrameCtrl::EMode_NONE,   -1.0f, 0},
+        {OS_BRK_TURN_ON,  J3DFrameCtrl::EMode_NONE,   1.0f,  0},
+        {OS_BRK_TURN_ON,  J3DFrameCtrl::EMode_NONE,   0.0f,  0},
+        {OS_BRK_TENMETU,  J3DFrameCtrl::EMode_LOOP, 1.0f,  0},
+        {OS_BRK_OS_AWAKE, J3DFrameCtrl::EMode_NONE,   0.0f,  -1},
+        {OS_BRK_LINK,     J3DFrameCtrl::EMode_LOOP, 1.0f,  0},
     };
 
     J3DModelData* modelData = mpMorf->getModel()->getModelData();
@@ -2054,7 +2055,7 @@ void daNpc_Os_c::animationPlay() {
     mPrevMorfFrame = frame;
 
     if(field_0x78C == 1 && mpMorf->checkFrame(17.0f)) {
-        smokeSet(0xA328);
+        smokeSet(dPa_name::ID_SCENE_A328);
     }
 
     playBrkAnm();
@@ -2129,7 +2130,7 @@ BOOL daNpc_Os_c::execute() {
             mAcch.CrrPos(*dComIfG_Bgsp());
             
             field_0x784 |= 0x10;
-            if(mAcch.GetGroundH() != -1.0e9f) {
+            if(mAcch.GetGroundH() != C_BG_MIN_HEIGHT) {
                 tevStr.mRoomNo = dComIfG_Bgsp()->GetRoomId(mAcch.m_gnd);
                 tevStr.mEnvrIdxOverride = dComIfG_Bgsp()->GetPolyColor(mAcch.m_gnd);
 
@@ -2206,7 +2207,7 @@ BOOL daNpc_Os_c::execute() {
             }
         }
 
-        if(mAcch.GetGroundH() != -1.0e9f) {
+        if(mAcch.GetGroundH() != C_BG_MIN_HEIGHT) {
             cM3dGPla* plane = dComIfG_Bgsp()->GetTriPla(mAcch.m_gnd.GetBgIndex(), mAcch.m_gnd.GetPolyIndex());
             if(plane) {
                 field_0x7F0 = *plane->GetNP();
@@ -2226,7 +2227,7 @@ BOOL daNpc_Os_c::execute() {
 
         field_0x7A8 = mAcch.ChkGroundHit();
         if(!fopAcM_checkCarryNow(this)) {
-            if(mAcch.GetGroundH() == -1.0e9f || dComIfG_Bgsp()->GetGroundCode(mAcch.m_gnd) == 4) {
+            if(mAcch.GetGroundH() == C_BG_MIN_HEIGHT || dComIfG_Bgsp()->GetGroundCode(mAcch.m_gnd) == 4) {
                 if(m4E8 < 30) {
                     m4E8 += 1;
                 }
@@ -2250,13 +2251,13 @@ BOOL daNpc_Os_c::execute() {
                 if(!isWaterHit()) {
                     onWaterHit();
 
-                    JPABaseEmitter* splash = dComIfGp_particle_set(0x40, &current.pos);
+                    JPABaseEmitter* splash = dComIfGp_particle_set(dPa_name::ID_COMMON_0040, &current.pos);
                     if(splash) {
                         splash->setRate(15.0f);
                         splash->setGlobalScale(splash_scale);
                     }
 
-                    JPABaseEmitter* ripple = dComIfGp_particle_setSingleRipple(0x3D, &current.pos);
+                    JPABaseEmitter* ripple = dComIfGp_particle_setSingleRipple(dPa_name::ID_COMMON_003D, &current.pos);
                     if(ripple) {
                         ripple->setGlobalScale(ripple_scale);
                     }
@@ -2268,7 +2269,7 @@ BOOL daNpc_Os_c::execute() {
         mAcch.CrrPos(*dComIfG_Bgsp());
 
         field_0x784 |= 0x10;
-        if(mAcch.GetGroundH() != -1.0e9f) {
+        if(mAcch.GetGroundH() != C_BG_MIN_HEIGHT) {
             tevStr.mRoomNo = dComIfG_Bgsp()->GetRoomId(mAcch.m_gnd);
             tevStr.mEnvrIdxOverride = dComIfG_Bgsp()->GetPolyColor(mAcch.m_gnd);
         }
@@ -2349,9 +2350,9 @@ daNpc_Os_c::~daNpc_Os_c() {
         l_hio_counter -= 1;
     }
     
-    if(l_hio_counter <= 0 && l_HIO.field_0x04 >= 0) {
-        mDoHIO_deleteChild(l_HIO.field_0x04);
-        l_HIO.field_0x04 = -1;
+    if(l_hio_counter <= 0 && l_HIO.mNo >= 0) {
+        mDoHIO_deleteChild(l_HIO.mNo);
+        l_HIO.mNo = -1;
     }
 
     m_playerRoom[subtype] = false;
@@ -2359,7 +2360,7 @@ daNpc_Os_c::~daNpc_Os_c() {
 }
 
 /* 00006E1C-00006E3C       .text daNpc_Os_Create__FP10fopAc_ac_c */
-static s32 daNpc_Os_Create(fopAc_ac_c* i_this) {
+static cPhs_State daNpc_Os_Create(fopAc_ac_c* i_this) {
     return static_cast<daNpc_Os_c*>(i_this)->create();
 }
 

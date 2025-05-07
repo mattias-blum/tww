@@ -51,7 +51,7 @@ void bg_check(esa_class* i_this) {
     cXyz sp54 = i_this->current.pos;
     sp54.y += 100.0f;
     f32 waterHeight = dBgS_GetWaterHeight(sp54);
-    if(waterHeight != -1000000000.0f && i_this->mGroundHeight <= waterHeight) {
+    if(waterHeight != C_BG_MIN_HEIGHT && i_this->mGroundHeight <= waterHeight) {
         i_this->mGroundHeight = waterHeight;
         state = 2;
     }
@@ -111,7 +111,7 @@ void esa_1_move(esa_class* i_this) {
                     i_this->mActionState = 3;
                     if(i_this->field_0x2A4.getEmitter() == NULL) {
                         static cXyz ripple_scale(0.2f, 0.2f, 0.2f);
-                        dComIfGp_particle_setShipTail(0x33, &i_this->current.pos, 0, &ripple_scale, 0xFF, &i_this->field_0x2A4);
+                        dComIfGp_particle_setShipTail(dPa_name::ID_COMMON_0033, &i_this->current.pos, 0, &ripple_scale, 0xFF, &i_this->field_0x2A4);
                         if(i_this->field_0x2A4.getEmitter()) {
                             i_this->field_0x2A4.setRate(0.4f);
                         }
@@ -174,7 +174,7 @@ void esa_1_move(esa_class* i_this) {
 
                 if(i_this->field_0x2A4.getEmitter() == NULL) {
                     static cXyz ripple_scale(0.2f, 0.2f, 0.2f);
-                    dComIfGp_particle_setShipTail(0x33, &i_this->current.pos, 0, &ripple_scale, 0xFF, &i_this->field_0x2A4);
+                    dComIfGp_particle_setShipTail(dPa_name::ID_COMMON_0033, &i_this->current.pos, 0, &ripple_scale, 0xFF, &i_this->field_0x2A4);
                     if(i_this->field_0x2A4.getEmitter()) {
                         i_this->field_0x2A4.setRate(0.4f);
                     }
@@ -240,7 +240,7 @@ static BOOL daEsa_CreateHeap(fopAc_ac_c* i_actor) {
 }
 
 /* 800E8AB0-800E8CA4       .text daEsa_Create__FP10fopAc_ac_c */
-static s32 daEsa_Create(fopAc_ac_c* i_actor) {
+static cPhs_State daEsa_Create(fopAc_ac_c* i_actor) {
     daPy_py_c* player = daPy_getPlayerActorClass();
 
     fopAcM_SetupActor(i_actor, esa_class);
@@ -263,11 +263,11 @@ static s32 daEsa_Create(fopAc_ac_c* i_actor) {
             for(int i = 0; i < num; i++) {
                 fopAcM_prm_class* params = fopAcM_CreateAppend();
                 cXyz pos = player->getLeftHandPos();
-                params->mPos = pos;
-                params->mAngle.x = 0;
-                params->mAngle.y = i_this->current.angle.y;
-                params->mAngle.z = cM_rndF(65536.0f);
-                params->mParameter = 0x000000FF;
+                params->base.position = pos;
+                params->base.angle.x = 0;
+                params->base.angle.y = i_this->current.angle.y;
+                params->base.angle.z = cM_rndF(65536.0f);
+                params->base.parameters = 0x000000FF;
                 fpcM_Create(PROC_ESA, 0, params);
             }
         }

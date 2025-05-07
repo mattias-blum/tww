@@ -7,20 +7,19 @@
 #include "f_op/f_op_actor.h"
 #include "f_op/f_op_actor_mng.h"
 #include "m_Do/m_Do_mtx.h"
-#include "m_Do/m_Do_hostIO.h"
 #include "d/d_procname.h"
 
 static daSceneChgHIO_c l_HIO;
 
 /* 000000EC-00000118       .text __ct__15daSceneChgHIO_cFv */
 daSceneChgHIO_c::daSceneChgHIO_c() {
-    m0004 = 0xFF;
+    mNo = -1;
     m0005 = 0;
     m0008 = 100.0f;
 }
 
 /* 00000118-000001A8       .text daSceneChgCreate__FPv */
-static s32 daSceneChgCreate(void* i_this) {
+static cPhs_State daSceneChgCreate(void* i_this) {
     d_a_scene_change_c* scnChg = static_cast<d_a_scene_change_c*>(i_this);
     
     fopAcM_SetupActor(scnChg, d_a_scene_change_c);

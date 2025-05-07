@@ -1,7 +1,7 @@
 #ifndef D_A_OBJ_BARRIER_H
 #define D_A_OBJ_BARRIER_H
 
-#include "f_op/f_op_actor_mng.h"
+#include "f_op/f_op_actor.h"
 #include "m_Do/m_Do_ext.h"
 #include "d/d_a_obj.h"
 
@@ -77,7 +77,7 @@ public:
     void break_order_proc();
     void break_end_wait_proc();
     bool break_check();
-    int _create();
+    cPhs_State _create();
     bool _delete();
     bool _execute();
     bool _draw();

@@ -10,8 +10,8 @@ class daShutter_c : public fopAc_ac_c {
 public:
     bool _delete();
     BOOL CreateHeap();
-    s32 Create();
-    s32 _create();
+    BOOL Create();
+    cPhs_State _create();
     void set_mtx();
     bool _execute();
     void shutter_move();
@@ -57,8 +57,8 @@ public:
 };
 
 namespace daShutter_prm {
-    inline u8 getSwitchNo(daShutter_c* item) { return (fopAcM_GetParam(item) >> 0) & 0xFF; }
-    inline u8 getType(daShutter_c* item) { return (fopAcM_GetParam(item) >> 8) & 0x0F; }
+    inline u8 getSwitchNo(daShutter_c* i_this) { return (fopAcM_GetParam(i_this) >> 0) & 0xFF; }
+    inline u8 getType(daShutter_c* i_this) { return (fopAcM_GetParam(i_this) >> 8) & 0x0F; }
 }
 
 #endif /* D_A_SHUTTER_H */

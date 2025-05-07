@@ -35,7 +35,7 @@ void daWarpfout_c::CreateInit() {
 }
 
 /* 0000008C-000000E4       .text _create__12daWarpfout_cFv */
-s32 daWarpfout_c::_create() {
+cPhs_State daWarpfout_c::_create() {
     fopAcM_SetupActor(this, daWarpfout_c);
     CreateInit();
 
@@ -141,7 +141,7 @@ void daWarpfout_c::initWarp4(int) {
     fopAc_ac_c* link = dComIfGp_getLinkPlayer();
 
     for (int i = 0; i < 6; i++) {
-        dComIfGp_particle_set(dPa_name::ID_WARPFOUT_WARP4, &link->current.pos);
+        dComIfGp_particle_set(dPa_name::ID_SCENE_WARPFOUT_WARP4, &link->current.pos);
     }
 }
 
@@ -164,7 +164,7 @@ void daWarpfout_c::set_effect_wind01(cXyz effectPos, s16 effectAngleZOffset) {
     csXyz effectAngle = get_effect_angle();
     effectAngle.z += effectAngleZOffset;
 
-    dComIfGp_particle_set(0x830f, &effectPos, &effectAngle);
+    dComIfGp_particle_set(dPa_name::ID_SCENE_830F, &effectPos, &effectAngle);
 }
 
 /* 000005F4-00000670       .text get_effect_angle__12daWarpfout_cFv */
@@ -179,7 +179,7 @@ csXyz daWarpfout_c::get_effect_angle() {
 }
 
 /* 00000670-00000690       .text daWarpfout_Create__FPv */
-static s32 daWarpfout_Create(void* i) {
+static cPhs_State daWarpfout_Create(void* i) {
     daWarpfout_c* i_this = static_cast<daWarpfout_c*>(i);
 
     return i_this->_create();

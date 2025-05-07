@@ -8,11 +8,9 @@
 #include "f_op/f_op_actor_mng.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_procname.h"
-#include "d/actor/d_a_player.h"
 #include "m_Do/m_Do_ext.h"
 #include "m_Do/m_Do_mtx.h"
 #include "SSystem/SComponent/c_lib.h"
-#include "JSystem/JUtility/JUTAssert.h"
 
 /* 00000078-000000C4       .text daSwtdoor_Draw__FP13swtdoor_class */
 static BOOL daSwtdoor_Draw(swtdoor_class* i_this) {
@@ -58,13 +56,13 @@ static BOOL useHeapInit(fopAc_ac_c* i_ac) {
 }
 
 /* 00000260-00000374       .text daSwtdoor_Create__FP10fopAc_ac_c */
-static s32 daSwtdoor_Create(fopAc_ac_c* i_ac) {
+static cPhs_State daSwtdoor_Create(fopAc_ac_c* i_ac) {
     swtdoor_class * i_this;
 
     fopAcM_SetupActor(i_ac, swtdoor_class);
     i_this = (swtdoor_class *)i_ac;
 
-    s32 rt = dComIfG_resLoad(&i_this->mPhs, "Swtdoor");
+    cPhs_State rt = dComIfG_resLoad(&i_this->mPhs, "Swtdoor");
     if (rt == cPhs_ERROR_e)
         return cPhs_ERROR_e;
 

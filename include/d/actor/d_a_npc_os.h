@@ -6,11 +6,11 @@
 #include "SSystem/SComponent/c_phase.h"
 #include "d/d_npc.h"
 #include "d/actor/d_a_player_npc.h"
-#include "d/actor/d_a_pedestal.h"
 #include "d/d_particle.h"
 #include "m_Do/m_Do_hostIO.h"
 
 class mDoExt_McaMorf;
+namespace daPedestal { class daPds_c; }
 
 class daNpc_Os_infiniteEcallBack_c : public dPa_levelEcallBack {
 public:
@@ -74,7 +74,7 @@ public:
     static bool isPlayerRoom(int idx) { return m_playerRoom[idx]; }
     static bool isPlayerRoom_Goat() { return isPlayerRoom(1); }
 
-    s32 create();
+    cPhs_State create();
     BOOL createHeap();
     BOOL jointCheck(s8);
     BOOL wakeupCheck();
@@ -259,7 +259,7 @@ public:
 public:
     /* 0x00 - vtable*/
 
-    /* 0x04 */ s8 field_0x04;
+    /* 0x04 */ s8 mNo;
 
     /* 0x08 */ daNpc_Os_HIO2_c mOs2;
     /* 0x34 */ dNpc_HIO_c mNpc;

@@ -29,14 +29,14 @@ BOOL daLbridge_c::CreateHeap() {
     J3DAnmTextureSRTKey* pbtk = (J3DAnmTextureSRTKey*)dComIfG_getObjectRes(m_arcname, GBRG00_BTK_GBRG00);
     JUT_ASSERT(0xE8, pbtk != NULL);
 
-    if (!mBtkAnm.init(modelData, pbtk, TRUE, J3DFrameCtrl::LOOP_REPEAT_e, 1.0f, 0, -1, false, 0)) {
+    if (!mBtkAnm.init(modelData, pbtk, TRUE, J3DFrameCtrl::EMode_LOOP, 1.0f, 0, -1, false, 0)) {
         return FALSE;
     }
 
     J3DAnmColor* pbpk = (J3DAnmColor*)dComIfG_getObjectRes(m_arcname, GBRG00_BPK_GBRG00);
     JUT_ASSERT(0xF6, pbpk != NULL);
 
-    if (!mBpkAnm.init(modelData, pbpk, TRUE, J3DFrameCtrl::LOOP_ONCE_e, 1.0f, 0, -1, false, 0)) {
+    if (!mBpkAnm.init(modelData, pbpk, TRUE, J3DFrameCtrl::EMode_NONE, 1.0f, 0, -1, false, 0)) {
         return FALSE;
     }
 
@@ -46,7 +46,7 @@ BOOL daLbridge_c::CreateHeap() {
     J3DAnmTevRegKey* pbrk = (J3DAnmTevRegKey*)dComIfG_getObjectRes(m_arcname, GBRG00_BRK_GBRG00);
     JUT_ASSERT(0x106, pbrk != NULL);
 
-    if (!mBrkAnm.init(modelData, pbrk, TRUE, J3DFrameCtrl::LOOP_REPEAT_e, 1.0f, 0, -1, false, 0)) {
+    if (!mBrkAnm.init(modelData, pbrk, TRUE, J3DFrameCtrl::EMode_LOOP, 1.0f, 0, -1, false, 0)) {
         return FALSE;
     }
 
@@ -55,7 +55,11 @@ BOOL daLbridge_c::CreateHeap() {
     mpBgW = new dBgW();
 
     if (mpBgW != NULL) {
-        return mpBgW->Set((cBgD_t*)dComIfG_getObjectRes(m_arcname, GBRG00_DZB_HHASHI1), cBgW::MOVE_BG_e, &mMtx) == true ? FALSE : TRUE;
+        if (mpBgW->Set((cBgD_t*)dComIfG_getObjectRes(m_arcname, GBRG00_DZB_HHASHI1), cBgW::MOVE_BG_e, &mMtx) == true) {
+            return FALSE;
+        } else {
+            return TRUE;
+        }
     }
 
     return FALSE;
@@ -68,7 +72,7 @@ void daLbridge_c::CreateInit() {
     fopAcM_setCullSizeBox(this, -600.0f, -100.0f, -150.0f, 600.0f, 100.0f, 150.0f);
     fopAcM_setCullSizeFar(this, 1.5f);
 
-    mpEmitter = dComIfGp_particle_set(0x810FU, &current.pos, &current.angle);
+    mpEmitter = dComIfGp_particle_set(dPa_name::ID_SCENE_810F, &current.pos, &current.angle);
 
     if (mpEmitter != NULL) {
         mpEmitter->stopDrawParticle();
@@ -96,10 +100,10 @@ void daLbridge_c::CreateInit() {
 }
 
 /* 00000544-0000063C       .text _create__11daLbridge_cFv */
-s32 daLbridge_c::_create() {
+cPhs_State daLbridge_c::_create() {
     fopAcM_SetupActor(this, daLbridge_c);
 
-    s32 ret = dComIfG_resLoad(&mPhs, m_arcname);
+    cPhs_State ret = dComIfG_resLoad(&mPhs, m_arcname);
 
     if (ret == cPhs_COMPLEATE_e) {
         if (!fopAcM_entrySolidHeap(this, CheckCreateHeap, 0x2E10U)) {
@@ -227,8 +231,8 @@ void daLbridge_c::appear_bridge() {
     pos1.z += 100.0f;
     pos2.z -= 100.0f;
 
-    dComIfGp_particle_setProjection(0x8119U, &pos1, &current.angle);
-    dComIfGp_particle_setProjection(0x8119U, &pos2, &current.angle);
+    dComIfGp_particle_setProjection(dPa_name::ID_SCENE_8119, &pos1, &current.angle);
+    dComIfGp_particle_setProjection(dPa_name::ID_SCENE_8119, &pos2, &current.angle);
 
     set_on_se();
 
@@ -304,7 +308,7 @@ bool daLbridge_c::_delete() {
 }
 
 /* 00000FF8-00001018       .text daLbridge_Create__FPv */
-static s32 daLbridge_Create(void* i_this) {
+static cPhs_State daLbridge_Create(void* i_this) {
     return static_cast<daLbridge_c*>(i_this)->_create();
 }
 

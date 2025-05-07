@@ -6,7 +6,6 @@
 #include "d/actor/d_a_shutter2.h"
 #include "d/d_procname.h"
 #include "d/d_com_inf_game.h"
-#include "d/d_bg_s_movebg_actor.h"
 #include "d/res/res_htobi3.h"
 
 const float daShutter2_c::m_max_speed[1] = {3.0f};
@@ -34,7 +33,7 @@ BOOL daShutter2_c::Delete() {
 /* 000000B8-00000194       .text CreateHeap__12daShutter2_cFv */
 int daShutter2_c::CreateHeap() {
     J3DModelData* modelData = (J3DModelData *)dComIfG_getObjectRes(m_arcname[mType], m_bdlidx[mType]);
-    JUT_ASSERT(0xe0, modelData != 0);
+    JUT_ASSERT(0xe0, modelData != NULL);
     mpModel = mDoExt_J3DModel__create(modelData, 0x80000, 0x11000022);
     if (!mpModel) {
         return FALSE;
@@ -43,7 +42,7 @@ int daShutter2_c::CreateHeap() {
 }
 
 /* 00000194-00000350       .text Create__12daShutter2_cFv */
-int daShutter2_c::Create() {
+BOOL daShutter2_c::Create() {
     fopAcM_SetMtx(this, mpModel->getBaseTRMtx());
     Vec cullMin = m_cull_min[mType];
     Vec cullMax = m_cull_max[mType];
@@ -70,13 +69,17 @@ int daShutter2_c::Create() {
 }
 
 /* 00000350-0000041C       .text _create__12daShutter2_cFv */
-s32 daShutter2_c::_create() {
+cPhs_State daShutter2_c::_create() {
     fopAcM_SetupActor(this, daShutter2_c);
     mType = 0;
-    if ((dComIfG_resLoad(&mPhs, m_arcname[mType]) == cPhs_COMPLEATE_e) && 
-        (MoveBGCreate(m_arcname[mType], m_dzbidx[mType], NULL, m_heapsize[mType]) == cPhs_ERROR_e)) {
-        return cPhs_ERROR_e;
+    cPhs_State phase_state = dComIfG_resLoad(&mPhs, m_arcname[mType]);
+    if (phase_state == cPhs_COMPLEATE_e) {
+        phase_state = MoveBGCreate(m_arcname[mType], m_dzbidx[mType], NULL, m_heapsize[mType]);
+        if (phase_state == cPhs_ERROR_e) {
+            phase_state = cPhs_ERROR_e;
+        }
     }
+    return phase_state;
 }
 
 /* 0000041C-000004AC       .text set_mtx__12daShutter2_cFv */
@@ -86,7 +89,6 @@ void daShutter2_c::set_mtx() {
     mDoMtx_stack_c::YrotM(current.angle.y);
     mpModel->setBaseTRMtx(mDoMtx_stack_c::get());
     MTXCopy(mDoMtx_stack_c::get(), mMtx);
-    return;
 }
 
 /* 000004AC-00000528       .text Execute__12daShutter2_cFPPA3_A4_f */
@@ -103,25 +105,36 @@ BOOL daShutter2_c::Execute(Mtx** pMtx) {
 void daShutter2_c::shutter_move() {
     float fVar3;
 
-    static char* action_table[4] = {"WAIT", "OPEN", "CLOSE", "OPEN_INIT"};
+    static char* action_table[4] = {
+        "WAIT",
+        "OPEN",
+        "CLOSE",
+        "OPEN_INIT",
+    };
+    enum {
+        ACT_WAIT,
+        ACT_OPEN,
+        ACT_CLOSE,
+        ACT_OPEN_INIT,
+    };
     int actionIndex = dComIfGp_evmng_getMyActIdx(mStaffId, action_table, ARRAY_SIZE(action_table), FALSE, 0);
 
     float maxVel = m_max_speed[mType];
     float minVel = m_min_speed[mType];
     
     switch (actionIndex) {
-        case 0: //WAIT
+        case ACT_WAIT:
         {
             dComIfGp_evmng_cutEnd(mStaffId);
             break;   
         }
-        case 3: //OPEN_INIT
+        case ACT_OPEN_INIT:
         {
             fopAcM_seStart(this, JA_SE_OBJ_WDUN_R04_STR_OP, 0);
             dComIfGp_evmng_cutEnd(mStaffId);
             break;
         }
-        case 1: //OPEN
+        case ACT_OPEN:
         {
             fVar3 = cLib_addCalc(&current.pos.y, home.pos.y + 350.0f, 0.1f, maxVel, minVel);
             if (fVar3 == 0.0f){
@@ -130,7 +143,7 @@ void daShutter2_c::shutter_move() {
             break;
 
         }
-        case 2: //CLOSE
+        case ACT_CLOSE:
         {
             fVar3 = cLib_addCalc(&current.pos.y, home.pos.y, 0.1f, maxVel, minVel);
             if (fVar3 == 0.0f){
@@ -140,40 +153,40 @@ void daShutter2_c::shutter_move() {
         }
         default:
             dComIfGp_evmng_cutEnd(mStaffId);
+            break;
     }
-    return;
 }
 
 /* 00000698-000008B0       .text demo__12daShutter2_cFv */
 void daShutter2_c::demo() {
     u8 isSwitch = fopAcM_isSwitch(this, mSwitchNo);
     u8 isNearEnemy = fopAcM_myRoomSearchEnemy(fopAcM_GetRoomNo(this)) == NULL;
-    if (mActionIndex == 0) {
+    if (mDemoState == 0) {
         if (mSwitchNo != 0xFF) {
-            if (isSwitch != (u8)mbIsSwitch) {
+            if (isSwitch != mbIsSwitch) {
                 if (!isSwitch) {
-                    mActionIndex = 2;
+                    mDemoState = 2;
                 }
                 else {
-                    mActionIndex = 1;
+                    mDemoState = 1;
                 }
             }
         }
         else if (isNearEnemy != mbIsNearEnemy) {
             if (!isNearEnemy) {
-                mActionIndex = 2;
+                mDemoState = 2;
             }
             else {
-                mActionIndex = 1;
+                mDemoState = 1;
             }
         }
     }
     if (eventInfo.checkCommandDemoAccrpt()) {
-        if (dComIfGp_evmng_startCheck(mOpenEventIdx) && (mActionIndex == 1)) {
-            mActionIndex = 0;
+        if (dComIfGp_evmng_startCheck(mOpenEventIdx) && (mDemoState == 1)) {
+            mDemoState = 0;
         }
-        if (dComIfGp_evmng_startCheck(mCloseEventIdx) && (mActionIndex == 2)) {
-            mActionIndex = 0;
+        if (dComIfGp_evmng_startCheck(mCloseEventIdx) && (mDemoState == 2)) {
+            mDemoState = 0;
         }
         if (dComIfGp_evmng_endCheck(mOpenEventIdx) || dComIfGp_evmng_endCheck(mCloseEventIdx)) {
             dComIfGp_event_reset();
@@ -181,15 +194,14 @@ void daShutter2_c::demo() {
         mStaffId = dComIfGp_evmng_getMyStaffId(m_staff_name[mType], NULL, 0);
         shutter_move();
     }
-    else if ((mActionIndex == 1) && (mOpenEventIdx != 0)) {
+    else if ((mDemoState == 1) && (mOpenEventIdx != 0)) {
         fopAcM_orderOtherEventId(this, mOpenEventIdx);
         eventInfo.onCondition(dEvtCnd_UNK2_e);
     }
-    else if ((mActionIndex == 2) && (mCloseEventIdx != 0)) {
+    else if ((mDemoState == 2) && (mCloseEventIdx != 0)) {
         fopAcM_orderOtherEventId(this, mCloseEventIdx);
         eventInfo.onCondition(dEvtCnd_UNK2_e);
     }
-    return;
 }
 
 /* 000008B0-00000950       .text Draw__12daShutter2_cFv */
@@ -203,7 +215,7 @@ BOOL daShutter2_c::Draw() {
 }
 
 /* 00000950-00000970       .text daShutter2_Create__FPv */
-static s32 daShutter2_Create(void* i_this) {
+static cPhs_State daShutter2_Create(void* i_this) {
     return ((daShutter2_c*)i_this)->_create();
 }
 

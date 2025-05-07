@@ -49,29 +49,29 @@ void fopAcM_setRoomLayer(void* pProc, int room_no) {
 }
 
 /* 800241C0-80024230       .text fopAcM_SearchByID__FUiPP10fopAc_ac_c */
-s32 fopAcM_SearchByID(fpc_ProcID actorID, fopAc_ac_c** pDstActor) {
+BOOL fopAcM_SearchByID(fpc_ProcID actorID, fopAc_ac_c** pDstActor) {
     if (fpcM_IsCreating(actorID)) {
         *pDstActor = NULL;
     } else {
         fopAc_ac_c *pActor = fopAcM_Search((fopAcIt_JudgeFunc)fpcSch_JudgeByID, &actorID);
         *pDstActor = pActor;
         if (*pDstActor == NULL)
-            return 0;
+            return FALSE;
     }
 
-    return 1;
+    return TRUE;
 }
 
 /* 80024230-800242AC       .text fopAcM_SearchByName__FsPP10fopAc_ac_c */
-s32 fopAcM_SearchByName(s16 procName, fopAc_ac_c** pDstActor) {
+BOOL fopAcM_SearchByName(s16 procName, fopAc_ac_c** pDstActor) {
     *pDstActor = fopAcM_Search((fopAcIt_JudgeFunc)fpcSch_JudgeForPName, &procName);
     if (*pDstActor == NULL) {
-        return 0;
+        return FALSE;
     } else {
         if (fpcM_IsCreating(fopAcM_GetID(*pDstActor))) {
             *pDstActor = NULL;
         }
-        return 1;
+        return TRUE;
     }
 }
 
@@ -80,13 +80,13 @@ fopAcM_prm_class* fopAcM_CreateAppend() {
     fopAcM_prm_class* params = (fopAcM_prm_class*)cMl::memalignB(-4, sizeof(fopAcM_prm_class));
     if (params != NULL) {
         cLib_memSet(params, 0, sizeof(fopAcM_prm_class));
-        params->mSetId = 0xFFFF;
-        params->mRoomNo = -1;
-        params->mScale.x = 10;
-        params->mScale.y = 10;
-        params->mScale.z = 10;
-        params->mParentPcId = fpcM_ERROR_PROCESS_ID_e;
-        params->mSubtype = -1;
+        params->base.setID = 0xFFFF;
+        params->room_no = -1;
+        params->scale.x = 10;
+        params->scale.y = 10;
+        params->scale.z = 10;
+        params->parent_id = fpcM_ERROR_PROCESS_ID_e;
+        params->subtype = -1;
     }
     return params;
 }
@@ -98,30 +98,30 @@ fopAcM_prm_class * createAppend(u32 parameter, cXyz* pPos, int roomNo, csXyz* pA
         return NULL;
 
     if (pPos != NULL)
-        params->mPos = *pPos;
+        params->base.position = *pPos;
     else
-        params->mPos = cXyz::Zero;
+        params->base.position = cXyz::Zero;
 
-    params->mRoomNo = roomNo;
+    params->room_no = roomNo;
 
     if (pAngle != NULL)
-        params->mAngle = *pAngle;
+        params->base.angle = *pAngle;
     else
-        params->mAngle = csXyz::Zero;
+        params->base.angle = csXyz::Zero;
 
     if (pScale != NULL) {
-        params->mScale.x = 10.0f * pScale->x;
-        params->mScale.y = 10.0f * pScale->y;
-        params->mScale.z = 10.0f * pScale->z;
+        params->scale.x = 10.0f * pScale->x;
+        params->scale.y = 10.0f * pScale->y;
+        params->scale.z = 10.0f * pScale->z;
     } else {
-        params->mScale.x = 10.0f;
-        params->mScale.y = 10.0f;
-        params->mScale.z = 10.0f;
+        params->scale.x = 10.0f;
+        params->scale.y = 10.0f;
+        params->scale.z = 10.0f;
     }
 
-    params->mParameter = parameter;
-    params->mParentPcId = parentPcId;
-    params->mSubtype = subtype;
+    params->base.parameters = parameter;
+    params->parent_id = parentPcId;
+    params->subtype = subtype;
 
     return params;
 }
@@ -132,14 +132,14 @@ void fopAcM_Log(fopAc_ac_c*, char*) {
 }
 
 /* 80024478-800244B8       .text fopAcM_delete__FP10fopAc_ac_c */
-s32 fopAcM_delete(fopAc_ac_c* pActor) {
+BOOL fopAcM_delete(fopAc_ac_c* pActor) {
     /* "Deleting Actor" */
     fopAcM_Log(pActor, "アクターの削除");
     return fpcM_Delete(pActor);
 }
 
 /* 800244B8-8002451C       .text fopAcM_delete__FUi */
-s32 fopAcM_delete(fpc_ProcID actorID) {
+BOOL fopAcM_delete(fpc_ProcID actorID) {
     fopAc_ac_c* pActor = (fopAc_ac_c*)fopAcM_SearchByID(actorID);
 
     if (pActor != NULL) {
@@ -759,20 +759,20 @@ s32 fopAcM_orderTreasureEvent(fopAc_ac_c* i_this, fopAc_ac_c* i_partner) {
 
 /* 80026044-80026074       .text fopAcM_getTalkEventPartner__FP10fopAc_ac_c */
 fopAc_ac_c* fopAcM_getTalkEventPartner(fopAc_ac_c*) {
-    return dComIfGp_event_getTalkPartner();
+    return (fopAc_ac_c*)dComIfGp_event_getTalkPartner();
 }
 
 /* 80026074-800260A4       .text fopAcM_getItemEventPartner__FP10fopAc_ac_c */
 fopAc_ac_c* fopAcM_getItemEventPartner(fopAc_ac_c*) {
-    return dComIfGp_event_getItemPartner();
+    return (fopAc_ac_c*)dComIfGp_event_getItemPartner();
 }
 
 /* 800260A4-80026118       .text fopAcM_getEventPartner__FP10fopAc_ac_c */
 fopAc_ac_c* fopAcM_getEventPartner(fopAc_ac_c* i_this) {
     if (dComIfGp_event_getPt1() != i_this)
-        return dComIfGp_event_getPt1();
+        return (fopAc_ac_c*)dComIfGp_event_getPt1();
 
-    return dComIfGp_event_getPt2();
+    return (fopAc_ac_c*)dComIfGp_event_getPt2();
 }
 
 /* 80026118-800261E8       .text fopAcM_createItemForPresentDemo__FP4cXyziUciiP5csXyzP4cXyz */
@@ -933,7 +933,7 @@ fpc_ProcID fopAcM_createRaceItem(cXyz* pos, int i_itemNo, int i_itemBitNo, csXyz
     }
 
     i_itemNo = check_itemno(i_itemNo);
-    u32 params = (i_itemBitNo & 0x7F) << 0x08 | i_itemNo & 0xFF | (param_7 & 0xF) << 0xF;
+    u32 params = (i_itemBitNo & 0x7F) << 0x08 | (i_itemNo & 0xFF) | (param_7 & 0xF) << 0xF;
     return fopAcM_create(PROC_RACEITEM, params, pos, roomNo, angle, scale);
 }
 
@@ -944,7 +944,7 @@ fpc_ProcID fopAcM_createDemoItem(cXyz* pos, int i_itemNo, int i_itemBitNo, csXyz
         return fpcM_ERROR_PROCESS_ID_e;
     }
 
-    u32 params = i_itemNo & 0xFF | (i_itemBitNo & 0x7F) << 0x08 | (argFlag & 0xFF) << 0x10;
+    u32 params = (i_itemNo & 0xFF) | (i_itemBitNo & 0x7F) << 0x08 | (argFlag & 0xFF) << 0x10;
     return fopAcM_create(PROC_Demo_Item, params, pos, roomNo, angle, scale);
 }
 
@@ -1274,7 +1274,7 @@ fopAc_ac_c* fopAcM_myRoomSearchEnemy(s8 roomNo) {
 
 /* 80027A9C-80027B24       .text fopAcM_createDisappear__FP10fopAc_ac_cP4cXyzUcUcUc */
 fpc_ProcID fopAcM_createDisappear(fopAc_ac_c* i_actor, cXyz* p_pos, u8 i_scale, u8 i_health, u8 i_itemBitNo) {
-    u32 params = (i_itemBitNo & 0xFF) << 0x10 | (i_scale & 0xFF) << 0x08 | i_health & 0xFF;
+    u32 params = (i_itemBitNo & 0xFF) << 0x10 | (i_scale & 0xFF) << 0x08 | (i_health & 0xFF);
     fopAc_ac_c* disappear = (fopAc_ac_c*)fopAcM_fastCreate(PROC_DISAPPEAR, params, p_pos, fopAcM_GetRoomNo(i_actor), fopAcM_GetAngle_p(i_actor));
     if (disappear) {
         disappear->itemTableIdx = i_actor->itemTableIdx;
@@ -1293,13 +1293,13 @@ BOOL fopAcM_getGroundAngle(fopAc_ac_c* actor, csXyz* p_angle) {
     pos.y = dComIfG_Bgsp()->GroundCross(&gndChk);
     s16 targetAngleX;
     int targetAngleZ;
-    if (pos.y != -1e9f) {
+    if (pos.y != C_BG_MIN_HEIGHT) {
         f32 origY = pos.y + 50.0f;
         gndChk.GetPointP()->set(pos.x, origY, pos.z + 10.0f);
         f32 origX = gndChk.GetPointP()->x;
         f32 origZ = gndChk.GetPointP()->z;
         f32 groundY = dComIfG_Bgsp()->GroundCross(&gndChk);
-        if (groundY != -1e9f) {
+        if (groundY != C_BG_MIN_HEIGHT) {
             targetAngleX = -cM_atan2s(groundY - pos.y, origZ - pos.z);
         } else {
             pos.y = pos.y; // ?? fakematch?
@@ -1311,7 +1311,7 @@ BOOL fopAcM_getGroundAngle(fopAc_ac_c* actor, csXyz* p_angle) {
         f32 tempZ = pos.z;
         gndChk.GetPointP()->set(origX, origY, tempZ);
         groundY = dComIfG_Bgsp()->GroundCross(&gndChk);
-        if (groundY != -1e9f) {
+        if (groundY != C_BG_MIN_HEIGHT) {
             targetAngleZ = cM_atan2s(groundY - pos.y, origX - pos.x);
         } else {
             ret = FALSE;
@@ -1388,11 +1388,11 @@ fopAc_ac_c* fopAcM_findObjectCB(fopAc_ac_c* it, void* i_prm) {
     fopAcM_search_prm* Prm = (fopAcM_search_prm*)i_prm;
     JUT_ASSERT(4095, Prm);
 
-    dStage_objectNameInf *inf = dStage_searchName(Prm->mpProcName);
+    dStage_objectNameInf *inf = dStage_searchName(Prm->procname);
     if (inf == NULL)
         return NULL;
 
-    if (inf->mProcName == fopAcM_GetProfName(it) && inf->mSubtype == it->subtype && (Prm->mParamMask == 0 || Prm->mParameter == (fopAcM_GetParam(it) & Prm->mParamMask)))
+    if (inf->mProcName == fopAcM_GetProfName(it) && inf->mSubtype == it->subtype && (Prm->prm_mask == 0 || Prm->parameter == (fopAcM_GetParam(it) & Prm->prm_mask)))
         return it;
 
     return NULL;
@@ -1401,18 +1401,18 @@ fopAc_ac_c* fopAcM_findObjectCB(fopAc_ac_c* it, void* i_prm) {
 /* 80028410-80028448       .text fopAcM_searchFromName__FPcUlUl */
 fopAc_ac_c* fopAcM_searchFromName(char* pProcName, u32 paramMask, u32 parameter) {
     fopAcM_search_prm param;
-    param.mpProcName = pProcName;
-    param.mParamMask = paramMask;
-    param.mParameter = parameter;
+    param.procname = pProcName;
+    param.prm_mask = paramMask;
+    param.parameter = parameter;
     return fopAcM_Search((fopAcIt_JudgeFunc)fopAcM_findObjectCB, &param);
 }
 
 /* 80028448-80028560       .text fopAcM_getWaterY__FPC4cXyzPf */
-s32 fopAcM_getWaterY(const cXyz* pPos, f32* pDstWaterY) {
+BOOL fopAcM_getWaterY(const cXyz* pPos, f32* pDstWaterY) {
     static dBgS_WtrChk water_check;
-    s32 ret = 0;
+    BOOL ret = FALSE;
 
-    *pDstWaterY = -1e09;
+    *pDstWaterY = C_BG_MIN_HEIGHT;
 
     cXyz pos;
     pos.x = pPos->x;
@@ -1423,14 +1423,14 @@ s32 fopAcM_getWaterY(const cXyz* pPos, f32* pDstWaterY) {
     bool hit = dComIfG_Bgsp()->WaterChk(&water_check);
     if (hit) {
         *pDstWaterY = water_check.GetHeight();
-        ret = 1;
+        ret = TRUE;
     }
 
     if (daSea_ChkArea(pPos->x, pPos->z)) {
         f32 waveY = daSea_calcWave(pPos->x, pPos->z);
         if (waveY > *pDstWaterY)
             *pDstWaterY = waveY;
-        ret = 1;
+        ret = TRUE;
     }
 
     return ret;

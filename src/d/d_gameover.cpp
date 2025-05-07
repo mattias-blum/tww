@@ -65,8 +65,8 @@ void dDlst_Gameover_CAPTURE_c::draw() {
 }
 
 /* 8018E4B4-8018E77C       .text _create__11dGameover_cFv */
-s32 dGameover_c::_create() {
-    s32 rt = dComIfG_resLoad(&mPhs, "Gover");
+cPhs_State dGameover_c::_create() {
+    cPhs_State rt = dComIfG_resLoad(&mPhs, "Gover");
     if (dMenu_flag() || (dComIfGp_isHeapLockFlag() != 0 && dComIfGp_isHeapLockFlag() != 4) || dComIfGp_getMesgStatus() != 0)
         return cPhs_INIT_e;
 
@@ -264,7 +264,7 @@ BOOL dDlst_GameOverScrnDraw_c::animeOpen() {
                 anime1(i);
                 if (letter[i].mUserArea == 5) {
                     cXyz temp(x[i], 50.0f, 0.0f);
-                    dComIfGp_particle_set2Dfore(0x2E, &temp);
+                    dComIfGp_particle_set2Dfore(dPa_name::ID_COMMON_002E, &temp);
                 }
             }
 
@@ -326,12 +326,12 @@ BOOL dDlst_GameOverScrnDraw_c::animeClose() {
 
 /* 8018F05C-8018F0CC       .text setEmitter0__24dDlst_GameOverScrnDraw_cF4cXyz */
 void dDlst_GameOverScrnDraw_c::setEmitter0(cXyz pos) {
-    mpEmitter0 = dComIfGp_particle_set2Dfore(0x2f, &pos);
+    mpEmitter0 = dComIfGp_particle_set2Dfore(dPa_name::ID_COMMON_002F, &pos);
 }
 
 /* 8018F0CC-8018F13C       .text setEmitter1__24dDlst_GameOverScrnDraw_cF4cXyz */
 void dDlst_GameOverScrnDraw_c::setEmitter1(cXyz pos) {
-    mpEmitter1 = dComIfGp_particle_set2DmenuFore(0x30, &pos);
+    mpEmitter1 = dComIfGp_particle_set2DmenuFore(dPa_name::ID_COMMON_0030, &pos);
 }
 
 /* 8018F13C-8018F334       .text anime1__24dDlst_GameOverScrnDraw_cFi */
@@ -437,7 +437,7 @@ static BOOL dGameover_Delete(dGameover_c* i_this) {
 }
 
 /* 8018F654-8018F674       .text dGameover_Create__FP9msg_class */
-static s32 dGameover_Create(msg_class* i_this) {
+static cPhs_State dGameover_Create(msg_class* i_this) {
     return ((dGameover_c*)i_this)->_create();
 }
 

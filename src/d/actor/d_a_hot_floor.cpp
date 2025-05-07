@@ -42,7 +42,7 @@ void daHot_Floor_c::set_mtx() {
 }
 
 /* 00000218-00000264       .text CreateInit__13daHot_Floor_cFv */
-s32 daHot_Floor_c::CreateInit() {
+cPhs_State daHot_Floor_c::CreateInit() {
     mbSpawnParticle = true;
     mSpawnTimer = 0.0f;
     set_mtx_init();
@@ -50,7 +50,7 @@ s32 daHot_Floor_c::CreateInit() {
     return cPhs_COMPLEATE_e;
 }
 
-s32 daHot_Floor_c::_create() {
+cPhs_State daHot_Floor_c::_create() {
     fopAcM_SetupActor(this, daHot_Floor_c);
     return CreateInit();
 }
@@ -66,9 +66,9 @@ bool daHot_Floor_c::_delete() {
 bool daHot_Floor_c::_execute() {
     if (mbSpawnParticle) {
         if (mEmitter2 == NULL && !(fopAcM_GetParam(this) & 1))
-            mEmitter2 = dComIfGp_particle_set(0x814c, &current.pos);
+            mEmitter2 = dComIfGp_particle_set(dPa_name::ID_SCENE_814C, &current.pos);
         if (mEmitter1 == NULL && !(fopAcM_GetParam(this) & 2))
-            mEmitter1 = dComIfGp_particle_set(0x8120, &current.pos);
+            mEmitter1 = dComIfGp_particle_set(dPa_name::ID_SCENE_8120, &current.pos);
         cLib_chaseF(&mSpawnTimer, 60.0f, 5.0f);
         mbSpawnParticle = false;
     } else {

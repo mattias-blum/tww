@@ -29,7 +29,7 @@ static BOOL createHeap_CB(fopAc_ac_c* i_actor) {
 
 /* 0000010C-00000148       .text __ct__16daObj_Hole_HIO_cFv */
 daObj_Hole_HIO_c::daObj_Hole_HIO_c() {
-    m04 = -1;
+    mNo = -1;
     m05 = 0;
     m08 = 65.0f;
     m0C = 0;
@@ -249,10 +249,10 @@ void daObj_Hole_c::getArg() {
 }
 
 /* 0000096C-00000BA8       .text _create__12daObj_Hole_cFv */
-s32 daObj_Hole_c::_create() {
+cPhs_State daObj_Hole_c::_create() {
     fopAcM_SetupActor(this, daObj_Hole_c);
 
-    s32 result = dComIfG_resLoad(&mPhs, m_arc_name);
+    cPhs_State result = dComIfG_resLoad(&mPhs, m_arc_name);
     if (result == cPhs_COMPLEATE_e) {
         getArg();
 

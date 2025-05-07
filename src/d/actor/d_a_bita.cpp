@@ -84,9 +84,9 @@ static void mode_dead(bita_class* i_this) {
                 type = 1;
 
             if (type == 0) {
-                dComIfGp_particle_set(0x80e3, &i_this->current.pos, &i_this->shape_angle);
+                dComIfGp_particle_set(dPa_name::ID_SCENE_80E3, &i_this->current.pos, &i_this->shape_angle);
             } else {
-                dComIfGp_particle_set(0x80e4, &i_this->current.pos, &i_this->shape_angle);
+                dComIfGp_particle_set(dPa_name::ID_SCENE_80E4, &i_this->current.pos, &i_this->shape_angle);
             }
         }
 
@@ -187,14 +187,14 @@ static BOOL useHeapInit(fopAc_ac_c* i_ac) {
     if (i_this->mpBrkAnm == NULL)
         return FALSE;
     J3DAnmTevRegKey* brk = (J3DAnmTevRegKey*)dComIfG_getObjectRes("Bita", ita_Ef[type]);
-    if (!i_this->mpBrkAnm->init(i_this->mpModelEf->getModelData(), brk, TRUE, J3DFrameCtrl::LOOP_ONCE_e, 1.0f, 0, -1, false, 0))
+    if (!i_this->mpBrkAnm->init(i_this->mpModelEf->getModelData(), brk, TRUE, J3DFrameCtrl::EMode_NONE, 1.0f, 0, -1, false, 0))
         return FALSE;
 
     i_this->mpBgW = new dBgW();
     if (i_this->mpBgW == NULL)
         return FALSE;
     cBgD_t* dzb = (cBgD_t*)dComIfG_getObjectRes("Bita", ita_dzb[type]);
-    if (i_this->mpBgW->Set(dzb, dBgW::MOVE_BG_e, &i_this->mMtx) == 1)
+    if (i_this->mpBgW->Set(dzb, dBgW::MOVE_BG_e, &i_this->mMtx) == true)
         return FALSE;
 
     i_this->mpBgW->SetCrrFunc(dBgS_MoveBGProc_Typical);
@@ -202,7 +202,7 @@ static BOOL useHeapInit(fopAc_ac_c* i_ac) {
 }
 
 /* 00000A60-00000D24       .text daBita_Create__FP10fopAc_ac_c */
-static s32 daBita_Create(fopAc_ac_c* i_ac) {
+static cPhs_State daBita_Create(fopAc_ac_c* i_ac) {
     static dCcD_SrcCyl body_cyl_src = {
         // dCcD_SrcGObjInf
         {
@@ -236,7 +236,7 @@ static s32 daBita_Create(fopAc_ac_c* i_ac) {
     fopAcM_SetupActor(i_ac, bita_class);
     bita_class* i_this = (bita_class*)i_ac;
 
-    s32 rt = dComIfG_resLoad(&i_this->mPhs, "Bita");
+    cPhs_State rt = dComIfG_resLoad(&i_this->mPhs, "Bita");
     if (rt == cPhs_COMPLEATE_e) {
         btd = NULL;
         i_this->mType = (fopAcM_GetParam(i_this) >> 0) & 0xFF;

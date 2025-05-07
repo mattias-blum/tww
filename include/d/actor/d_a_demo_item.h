@@ -1,7 +1,6 @@
 #ifndef D_A_DEMO_ITEM_H
 #define D_A_DEMO_ITEM_H
 
-#include "f_op/f_op_actor.h"
 #include "d/actor/d_a_itembase.h"
 #include "f_op/f_op_actor_mng.h"
 #include "SSystem/SComponent/c_lib.h"
@@ -18,7 +17,7 @@ public:
     static u8 m_effect_type[];
 
     inline BOOL Delete();
-    inline s32 create();
+    inline cPhs_State create();
     inline BOOL draw();
     inline BOOL execute();
     inline BOOL isdelete();
@@ -39,8 +38,8 @@ public:
 };
 
 namespace daDitem_prm {
-    inline u32 getNo(daDitem_c* item) { return (fopAcM_GetParam(item) >> 0x00) & 0xFF; }
-    inline u32 getFlag(daDitem_c* item) { return (fopAcM_GetParam(item) >> 0x10) & 0xFF; }
+    inline u32 getNo(daDitem_c* i_this) { return (fopAcM_GetParam(i_this) >> 0x00) & 0xFF; }
+    inline u32 getFlag(daDitem_c* i_this) { return (fopAcM_GetParam(i_this) >> 0x10) & 0xFF; }
 };
 
 #endif /* D_A_DEMO_ITEM_H */

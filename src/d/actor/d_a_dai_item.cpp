@@ -236,18 +236,18 @@ BOOL daStandItem_c::CreateHeap() {
         mpBckAnm = new mDoExt_bckAnm();
 
         static const u32 playmode[] = {
-            J3DFrameCtrl::LOOP_REPEAT_e, /* FLOWER_1 */
-            J3DFrameCtrl::LOOP_REPEAT_e, /* FLOWER_2 */
-            J3DFrameCtrl::LOOP_REPEAT_e, /* FLOWER_3 */
-            -1,                          /* HEROS_FLAG */
-            -1,                          /* TAIRYO_FLAG */
-            J3DFrameCtrl::LOOP_REPEAT_e, /* SALES_FLAG */
-            J3DFrameCtrl::LOOP_REPEAT_e, /* WIND_FLAG */
-            J3DFrameCtrl::LOOP_REPEAT_e, /* RED_FLAG */
-            J3DFrameCtrl::LOOP_REPEAT_e, /* FOSSIL_HEAD */
-            J3DFrameCtrl::LOOP_ONCE_e,   /* WATER_STATUE */
-            J3DFrameCtrl::LOOP_REPEAT_e, /* POSTMAN_STATUE */
-            J3DFrameCtrl::LOOP_REPEAT_e, /* PRESIDENT_STATUE */
+            /* FLOWER_1         */ J3DFrameCtrl::EMode_LOOP,
+            /* FLOWER_2         */ J3DFrameCtrl::EMode_LOOP,
+            /* FLOWER_3         */ J3DFrameCtrl::EMode_LOOP,
+            /* HEROS_FLAG       */ -1,
+            /* TAIRYO_FLAG      */ -1,
+            /* SALES_FLAG       */ J3DFrameCtrl::EMode_LOOP,
+            /* WIND_FLAG        */ J3DFrameCtrl::EMode_LOOP,
+            /* RED_FLAG         */ J3DFrameCtrl::EMode_LOOP,
+            /* FOSSIL_HEAD      */ J3DFrameCtrl::EMode_LOOP,
+            /* WATER_STATUE     */ J3DFrameCtrl::EMode_NONE,
+            /* POSTMAN_STATUE   */ J3DFrameCtrl::EMode_LOOP,
+            /* PRESIDENT_STATUE */ J3DFrameCtrl::EMode_LOOP,
         };
 
         if (mpBckAnm == NULL || !mpBckAnm->init(modelData, pbck, TRUE, playmode[mItemType], 1.0f, 0, -1, false))
@@ -374,17 +374,17 @@ void daStandItem_c::CreateInit() {
 }
 
 /* 800E3E94-800E4048       .text _create__13daStandItem_cFv */
-s32 daStandItem_c::_create() {
+cPhs_State daStandItem_c::_create() {
     fopAcM_SetupActor(this, daStandItem_c);
 
     mItemNo = fopAcM_GetParam(this);
     mItemType = convItemNo(mItemNo);
 
-    s32 rt = dComIfG_resLoad(&mPhsDai, m_arcname);
+    cPhs_State rt = dComIfG_resLoad(&mPhsDai, m_arcname);
     if (rt != cPhs_COMPLEATE_e)
         return rt;
 
-    s32 cloth_rt = dComIfG_resLoad(&mPhsCloth, "Cloth");
+    cPhs_State cloth_rt = dComIfG_resLoad(&mPhsCloth, "Cloth");
     if (cloth_rt != cPhs_COMPLEATE_e)
         return cloth_rt;
 
@@ -549,7 +549,7 @@ bool daStandItem_c::actionFobj09() {
             m698 = NULL;
         }
         if (m690 == NULL) {
-            m690 = dComIfGp_particle_set(0x82B3, &current.pos, &current.angle, NULL, 0xFF, NULL, fopAcM_GetRoomNo(this), &tevStr.mColorK0);
+            m690 = dComIfGp_particle_set(dPa_name::ID_SCENE_82B3, &current.pos, &current.angle, NULL, 0xFF, NULL, fopAcM_GetRoomNo(this), &tevStr.mColorK0);
         } else {
             m690->setGlobalRTMatrix(m660);
         }
@@ -574,10 +574,10 @@ bool daStandItem_c::actionFobj09() {
                 m690 = NULL;
             }
             if (m694 == NULL) {
-                m694 = dComIfGp_particle_set(0x82B4, &current.pos, &current.angle, NULL, 0xFF, NULL, fopAcM_GetRoomNo(this), &tevStr.mColorK0);
+                m694 = dComIfGp_particle_set(dPa_name::ID_SCENE_82B4, &current.pos, &current.angle, NULL, 0xFF, NULL, fopAcM_GetRoomNo(this), &tevStr.mColorK0);
             }
             if (m698 == NULL) {
-                m698 = dComIfGp_particle_set(0x82B5, &current.pos, &current.angle);
+                m698 = dComIfGp_particle_set(dPa_name::ID_SCENE_82B5, &current.pos, &current.angle);
             }
             if (m698) {
                 m698->becomeImmortalEmitter();
@@ -716,7 +716,7 @@ void daStandItem_c::execAction() {
 void daStandItem_c::mode_carry_init() {
     fopAcM_SetSpeedF(this, 0.0f);
     speed = cXyz::Zero;
-    attention_info.flags &= ~fopAc_Attn_ACTION_CARRY_e;
+    cLib_offBit<u32>(attention_info.flags, fopAc_Attn_ACTION_CARRY_e);
     mCyl.OffCoSetBit();
     mMode = MODE_CARRY;
 }
@@ -759,7 +759,7 @@ bool daStandItem_c::_draw() {
     g_env_light.settingTevStruct(TEV_TYPE_ACTOR, &current.pos, &tevStr);
     g_env_light.setLightTevColorType(mpModel, &tevStr);
     if (mItemNo == WIND_FLAG)
-        mpModel->getModelData()->getJointNodePointer(0)->setMtxCalc(NULL);
+        mDoExt_bckAnmRemove(mpModel->getModelData());
     else if (mpBckAnm != NULL)
         mpBckAnm->entry(mpModel->getModelData());
 
@@ -774,7 +774,7 @@ bool daStandItem_c::_draw() {
 }
 
 /* 800E53B8-800E53D8       .text daStandItem_Create__FPv */
-static s32 daStandItem_Create(void* i_this) {
+static cPhs_State daStandItem_Create(void* i_this) {
     return ((daStandItem_c*)i_this)->_create();
 }
 

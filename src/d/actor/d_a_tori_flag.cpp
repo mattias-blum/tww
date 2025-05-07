@@ -4,7 +4,6 @@
 //
 
 #include "d/actor/d_a_tori_flag.h"
-#include "dolphin/mtx/mtx.h"
 #include "d/d_procname.h"
 #include "d/d_kankyo_wether.h"
 #include "m_Do/m_Do_mtx.h"
@@ -14,7 +13,6 @@
 #include "d/res/res_cloth.h"
 #include "f_op/f_op_actor_mng.h"
 #include "d/d_a_obj.h"
-#include "SSystem/SComponent/c_math.h"
 
 #include "weak_bss_936_to_1036.h" // IWYU pragma: keep
 
@@ -50,10 +48,9 @@ static dCcD_SrcCyl l_cyl_src = {
 
 /* 000000EC-00000118       .text __ct__17daTori_Flag_HIO_cFv */
 daTori_Flag_HIO_c::daTori_Flag_HIO_c() {
-    mNo = -0x1;
-    someFloat = 0.0f;
-    someShort = 0;
-    return;
+    mNo = -1;
+    m08 = 0.0f;
+    m0C = 0;
 }
 
 static daTori_Flag_HIO_c l_HIO;
@@ -70,7 +67,6 @@ void daTori_Flag_c::set_mtx() {
     mpModel->setBaseTRMtx(mDoMtx_stack_c::get());
     mDoMtx_stack_c::transM(l_flag_offset);
     mpCloth->setMtx(mDoMtx_stack_c::get());
-    return;
 }
 
 /* 000001C4-000001E4       .text CheckCreateHeap__FP10fopAc_ac_c */
@@ -82,7 +78,7 @@ static BOOL CheckCreateHeap(fopAc_ac_c* i_this) {
 BOOL daTori_Flag_c::CreateHeap() {
     BOOL ret;
     J3DModelData* modelData = (J3DModelData *)dComIfG_getObjectRes(M_arcname, TRFLAG_BDL_ETHATA);
-    JUT_ASSERT(0x120, modelData != 0);
+    JUT_ASSERT(0x120, modelData != NULL);
     mpModel = mDoExt_J3DModel__create(modelData, 0, 0x11020203);
     if (mpModel == NULL) {
         ret = FALSE;
@@ -97,7 +93,7 @@ BOOL daTori_Flag_c::CreateHeap() {
 }
 
 /* 0000030C-000003A4       .text CreateInit__13daTori_Flag_cFv */
-s32 daTori_Flag_c::CreateInit() {
+cPhs_State daTori_Flag_c::CreateInit() {
     mStts.Init(0xFF,0xFF,this);
     mCyl.Set(l_cyl_src);
     mCyl.SetStts(&mStts);
@@ -108,13 +104,13 @@ s32 daTori_Flag_c::CreateInit() {
     set_mtx();
     dKy_tevstr_init(&mClothTevStr, current.roomNo, 0xFF);
     fopAcM_SetMtx(this, mpModel->getBaseTRMtx());
-    return 4;
+    return cPhs_COMPLEATE_e;
 }
 
 /* 000003C4-00000478       .text _create__13daTori_Flag_cFv */
-s32 daTori_Flag_c::_create() {
+cPhs_State daTori_Flag_c::_create() {
     fopAcM_SetupActor(this, daTori_Flag_c);
-    int result = dComIfG_resLoad(&mPhsTrflag, M_arcname);
+    cPhs_State result = dComIfG_resLoad(&mPhsTrflag, M_arcname);
     if (result != cPhs_COMPLEATE_e) {
         return result;
     }
