@@ -327,11 +327,230 @@ void dMenu_Collect_c::screenSet() {
 /* 8019CB5C-8019CD40       .text initialize__15dMenu_Collect_cFv */
 void dMenu_Collect_c::initialize() {
     /* Nonmatching */
+    m27E2 = 0;
+    m27F2 = 0;
+    m27DC = 0;
+    m858.mUserArea = 10;
+    mA18[0].mUserArea = 0;
+    mA18[1].mUserArea = 0;
+    m27E4 = 0;
+
+    for (int i = 0; i < 6; i++) {
+        m1498[i].mUserArea = 0;
+    }
+    
+    m15E8[0].mUserArea = 0;
+
+    for (int i = 0; i < 6; i++) {
+        m1E38[i].mUserArea = 0;
+    }
+
+    m1498[0].mUserArea = 0;
+
+    m27EA = 0;
+    m27EC = 0;
+    m27EE = 0;
+    m27EF = 0;
+
+    tactGuideHide();
+
+    if (m27ED <= 5 && dComIfGs_isTact(m27ED)) {
+        for (int i = 0; i < 6; i++) {
+            m1E38[i].mUserArea = 1;
+        }
+
+        tactGuideShow(m27ED, false);
+    }
+    else {
+        tactBaseShow();
+    }
+
+    if (m27ED <= 0xd || m27ED >= 0x13) {
+        collectPriority();
+    }
+    else {
+        weponPriority();
+    }
+
+    noteInit();
+    outFontInit();
+    itemBitCheck();
+
+    m970.mInitAlpha = 0x82;
+    m27E6 = 0;
+    m27E8 = 0;
+
+    ((J2DWindow*)mB68[1].pane)->getContentsColor(m2488);
 }
 
 /* 8019CD40-8019D540       .text cursorAnime__15dMenu_Collect_cFv */
 void dMenu_Collect_c::cursorAnime() {
-    /* Nonmatching */
+    short x_trans;
+    short y_trans;
+    
+    switch(m27ED) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+        for(int i = 0; i < 4; i++) {
+            mA18[i].mPosCenterOrig.x = m1498[m27ED].mPosCenter.x + m2788[i];
+            mA18[i].mPosCenterOrig.y = m1498[m27ED].mPosCenter.y + m2798[i];
+        }
+        break;
+    case 6:
+        mA18[0].mPosCenterOrig.x = mB30.mPosCenter.x - mB30.mSize.x / 2.0f;
+        mA18[0].mPosCenterOrig.y = mB30.mPosCenter.y + mB30.mSize.y / 2.0f;
+
+        mA18[1].mPosCenterOrig.x = mB30.mPosCenter.x + mB30.mSize.x / 2.0f;
+        mA18[1].mPosCenterOrig.y = mB30.mPosCenter.y + mB30.mSize.y / 2.0f;
+
+        mA18[2].mPosCenterOrig.x = mB30.mPosCenter.x - mB30.mSize.x / 2.0f;
+        mA18[2].mPosCenterOrig.y = mB30.mPosCenter.y - mB30.mSize.y / 2.0f;
+
+        mA18[3].mPosCenterOrig.x = mB30.mPosCenter.x + mB30.mSize.x / 2.0f;
+        mA18[3].mPosCenterOrig.y = mB30.mPosCenter.y - mB30.mSize.y / 2.0f;
+        break;
+    case 7:
+        mA18[0].mPosCenterOrig.x = mAF8.mPosCenter.x - mAF8.mSize.x / 2.0f;
+        mA18[0].mPosCenterOrig.y = mAF8.mPosCenter.y + mAF8.mSize.y / 2.0f;
+
+        mA18[1].mPosCenterOrig.x = mAF8.mPosCenter.x + mAF8.mSize.x / 2.0f;
+        mA18[1].mPosCenterOrig.y = mAF8.mPosCenter.y + mAF8.mSize.y / 2.0f;
+
+        mA18[2].mPosCenterOrig.x = mAF8.mPosCenter.x - mAF8.mSize.x / 2.0f;
+        mA18[2].mPosCenterOrig.y = mAF8.mPosCenter.y - mAF8.mSize.y / 2.0f;
+
+        mA18[3].mPosCenterOrig.x = mAF8.mPosCenter.x + mAF8.mSize.x / 2.0f;
+        mA18[3].mPosCenterOrig.y = mAF8.mPosCenter.y - mAF8.mSize.y / 2.0f;
+        break;
+    case 8:
+        for(int i = 0; i < 4; i++) {
+            mA18[i].mPosCenterOrig.x = m13B8[2].mPosTopLeft.x + m2788[i];
+            mA18[i].mPosCenterOrig.y = m13B8[2].mPosTopLeft.y + m2798[i];
+        }
+        break;
+    case 9:
+        if (dComIfGs_isEventBit(0x908) || dComIfGs_getCollectMapNum()) {
+            for(int i = 0; i < 4; i++) {
+                mA18[i].mPosCenterOrig.x = mCF0.mPosCenter.x + m2788[i];
+                mA18[i].mPosCenterOrig.y = mCF0.mPosCenter.y + m2798[i];
+            }
+        }
+        else {
+            mA18[0].mPosCenterOrig.x = mD60.mPosCenter.x - mD60.mSize.x / 2.0f;
+            mA18[0].mPosCenterOrig.y = mD60.mPosCenter.y + mD60.mSize.y / 2.0f;
+
+            mA18[1].mPosCenterOrig.x = mD60.mPosCenter.x + mD60.mSize.x / 2.0f;
+            mA18[1].mPosCenterOrig.y = mD60.mPosCenter.y + mD60.mSize.y / 2.0f;
+
+            mA18[2].mPosCenterOrig.x = mD60.mPosCenter.x - mD60.mSize.x / 2.0f;
+            mA18[2].mPosCenterOrig.y = mD60.mPosCenter.y - mD60.mSize.y / 2.0f;
+
+            mA18[3].mPosCenterOrig.x = mD60.mPosCenter.x + mD60.mSize.x / 2.0f;
+            mA18[3].mPosCenterOrig.y = mD60.mPosCenter.y - mD60.mSize.y / 2.0f;
+        }
+        break;
+    case 10:
+        mA18[0].mPosCenterOrig.x = mE08[4].mPosCenter.x - mFC8.mSize.x / 2.0f;
+        mA18[0].mPosCenterOrig.y = mE08[4].mPosCenter.y + mFC8.mSize.y / 2.0f;
+
+        mA18[1].mPosCenterOrig.x = mE08[4].mPosCenter.x + mFC8.mSize.x / 2.0f;
+        mA18[1].mPosCenterOrig.y = mE08[4].mPosCenter.y + mFC8.mSize.y / 2.0f;
+
+        mA18[2].mPosCenterOrig.x = mE08[4].mPosCenter.x - mFC8.mSize.x / 2.0f;
+        mA18[2].mPosCenterOrig.y = mE08[4].mPosCenter.y - mFC8.mSize.y / 2.0f;
+
+        mA18[3].mPosCenterOrig.x = mE08[4].mPosCenter.x + mFC8.mSize.x / 2.0f;
+        mA18[3].mPosCenterOrig.y = mE08[4].mPosCenter.y - mFC8.mSize.y / 2.0f;
+        break;
+    case 0xb:
+    case 0xc:
+    case 0xd:
+        for(int i = 0; i < 4; i++) {
+            mA18[i].mPosCenterOrig.x = mE08[m27ED - 2].mPosCenter.x + m2788[i];
+            mA18[i].mPosCenterOrig.y = mE08[m27ED - 2].mPosCenter.y + m2798[i];
+        }
+        break;
+    case 0xe:
+    case 0xf:
+    case 0x10:
+    case 0x11:
+    case 0x12:
+        for(int i = 0; i < 4; i++) {
+            mA18[i].mPosCenterOrig.x = m1CE8[m27ED + 1].mPosCenter.x + m2788[i];
+            mA18[i].mPosCenterOrig.y = m1CE8[m27ED + 1].mPosCenter.y + m2798[i];
+        }
+        break;
+    case 0x13:
+        float f3 = (m1498[2].mPosCenter.x + m1498[3].mPosCenter.x) / 2.0f;
+        float f4 = m1498[0].mPosCenter.y;
+        float fVar4 = ((m1498[5].mPosTopLeft.x + m1498[5].mSize.x) - m1498[0].mPosTopLeft.x) / 2.0f;
+        float fVar5 = m1498[0].mSize.y / 2.0f;
+
+        mA18[0].mPosCenterOrig.x = f3 - fVar4;
+        
+        mA18[0].mPosCenterOrig.y = f4 + fVar5;
+
+        mA18[1].mPosCenterOrig.x = f3 + fVar4;
+        mA18[1].mPosCenterOrig.y = f4 + fVar5;
+
+        mA18[2].mPosCenterOrig.x = f3 - fVar4;
+        mA18[2].mPosCenterOrig.y = f4 - fVar5;
+
+        mA18[3].mPosCenterOrig.x = f3 + fVar4;
+        mA18[3].mPosCenterOrig.y = f4 - fVar5;
+        break;
+    case 0x14:
+        mA18[0].mPosCenterOrig.x = m1150[8].mPosCenter.x - m1150[8].mSize.x / 2.0f;
+        mA18[0].mPosCenterOrig.y = m1150[8].mPosCenter.y + m1150[8].mSize.y / 2.0f;
+
+        mA18[1].mPosCenterOrig.x = m1150[8].mPosCenter.x + m1150[8].mSize.x / 2.0f;
+        mA18[1].mPosCenterOrig.y = m1150[8].mPosCenter.y + m1150[8].mSize.y / 2.0f;
+
+        mA18[2].mPosCenterOrig.x = m1150[8].mPosCenter.x - m1150[8].mSize.x / 2.0f;
+        mA18[2].mPosCenterOrig.y = m1150[8].mPosCenter.y - m1150[8].mSize.y / 2.0f;
+
+        mA18[3].mPosCenterOrig.x = m1150[8].mPosCenter.x + m1150[8].mSize.x / 2.0f;
+        mA18[3].mPosCenterOrig.y = m1150[8].mPosCenter.y - m1150[8].mSize.y / 2.0f;
+    }
+
+    /*  Possible bug? 
+        `x_trans` and `y_trans` can be uninitialized if both conditionals
+        return FALSE leading to possible unsafe behavior (not sure if
+        `mUserArea` can be >= 20)?
+    */ 
+    if (mA18[0].mUserArea < 10) {
+        for (int i = 0; i < 4; i++) {
+            J2DPicture* picture = (J2DPicture*)mA18[i].pane;
+            picture->setBlendColorRatio(1.0f, 0.0f, 1.0f, 1.0f);
+            picture->setBlendAlphaRatio(1.0f, 0.0f, 1.0f, 1.0f);
+        }
+        x_trans = 7;
+        y_trans = 7;
+    }
+    else if (mA18[0].mUserArea < 20) {
+        for (int i = 0; i < 4; i++) {
+            J2DPicture* picture = (J2DPicture*)mA18[i].pane;
+            picture->setBlendColorRatio(0.0f, 1.0f, 1.0f, 1.0f);
+            picture->setBlendAlphaRatio(0.0f, 1.0f, 1.0f, 1.0f);
+        }
+        x_trans = 0xe;
+        y_trans = 0xe;
+    }
+
+    fopMsgM_paneTrans(&mA18[0], -x_trans, y_trans);
+    fopMsgM_paneTrans(&mA18[1], x_trans, y_trans);
+    fopMsgM_paneTrans(&mA18[2], -x_trans, -y_trans);
+    fopMsgM_paneTrans(&mA18[3], x_trans, -y_trans);
+
+    mA18[0].mUserArea++;
+
+    if (mA18[0].mUserArea >= 0x14) {
+        mA18[0].mUserArea = 0;
+    }
 }
 
 /* 8019D540-8019D5A8       .text stickDirection__15dMenu_Collect_cFUc */
