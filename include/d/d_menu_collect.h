@@ -47,7 +47,7 @@ public:
     void screenSet();
     void initialize();
     void cursorAnime();
-    void stickDirection(unsigned char);
+    int stickDirection(unsigned char);
     void cursorMainMove();
     void noteCheck();
     void noteInit();

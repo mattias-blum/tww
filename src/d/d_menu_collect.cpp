@@ -326,7 +326,6 @@ void dMenu_Collect_c::screenSet() {
 
 /* 8019CB5C-8019CD40       .text initialize__15dMenu_Collect_cFv */
 void dMenu_Collect_c::initialize() {
-    /* Nonmatching */
     m27E2 = 0;
     m27F2 = 0;
     m27DC = 0;
@@ -466,44 +465,44 @@ void dMenu_Collect_c::cursorAnime() {
         mA18[3].mPosCenterOrig.x = mE08[4].mPosCenter.x + mFC8.mSize.x / 2.0f;
         mA18[3].mPosCenterOrig.y = mE08[4].mPosCenter.y - mFC8.mSize.y / 2.0f;
         break;
-    case 0xb:
-    case 0xc:
-    case 0xd:
+    case 11:
+    case 12:
+    case 13:
         for(int i = 0; i < 4; i++) {
             mA18[i].mPosCenterOrig.x = mE08[m27ED - 2].mPosCenter.x + m2788[i];
             mA18[i].mPosCenterOrig.y = mE08[m27ED - 2].mPosCenter.y + m2798[i];
         }
         break;
-    case 0xe:
-    case 0xf:
-    case 0x10:
-    case 0x11:
-    case 0x12:
+    case 14:
+    case 15:
+    case 16:
+    case 17:
+    case 18:
         for(int i = 0; i < 4; i++) {
             mA18[i].mPosCenterOrig.x = m1CE8[m27ED + 1].mPosCenter.x + m2788[i];
             mA18[i].mPosCenterOrig.y = m1CE8[m27ED + 1].mPosCenter.y + m2798[i];
         }
         break;
-    case 0x13:
-        float f3 = (m1498[2].mPosCenter.x + m1498[3].mPosCenter.x) / 2.0f;
-        float f4 = m1498[0].mPosCenter.y;
-        float fVar4 = ((m1498[5].mPosTopLeft.x + m1498[5].mSize.x) - m1498[0].mPosTopLeft.x) / 2.0f;
-        float fVar5 = m1498[0].mSize.y / 2.0f;
+    case 19: {
+        float x1 = (m1498[2].mPosCenter.x + m1498[3].mPosCenter.x) / 2.0f;
+        float y1 = m1498[0].mPosCenter.y;
+        float x2 = ((m1498[5].mPosTopLeft.x + m1498[5].mSize.x) - m1498[0].mPosTopLeft.x) / 2.0f;
+        float y2 = m1498[0].mSize.y / 2.0f;
 
-        mA18[0].mPosCenterOrig.x = f3 - fVar4;
-        
-        mA18[0].mPosCenterOrig.y = f4 + fVar5;
+        mA18[0].mPosCenterOrig.x = x1 - x2;
+        mA18[0].mPosCenterOrig.y = y1 + y2;
 
-        mA18[1].mPosCenterOrig.x = f3 + fVar4;
-        mA18[1].mPosCenterOrig.y = f4 + fVar5;
+        mA18[1].mPosCenterOrig.x = x1 + x2;
+        mA18[1].mPosCenterOrig.y = y1 + y2;
 
-        mA18[2].mPosCenterOrig.x = f3 - fVar4;
-        mA18[2].mPosCenterOrig.y = f4 - fVar5;
+        mA18[2].mPosCenterOrig.x = x1 - x2;
+        mA18[2].mPosCenterOrig.y = y1 - y2;
 
-        mA18[3].mPosCenterOrig.x = f3 + fVar4;
-        mA18[3].mPosCenterOrig.y = f4 - fVar5;
+        mA18[3].mPosCenterOrig.x = x1 + x2;
+        mA18[3].mPosCenterOrig.y = y1 - y2;
         break;
-    case 0x14:
+    }
+    case 20:
         mA18[0].mPosCenterOrig.x = m1150[8].mPosCenter.x - m1150[8].mSize.x / 2.0f;
         mA18[0].mPosCenterOrig.y = m1150[8].mPosCenter.y + m1150[8].mSize.y / 2.0f;
 
@@ -528,6 +527,7 @@ void dMenu_Collect_c::cursorAnime() {
             picture->setBlendColorRatio(1.0f, 0.0f, 1.0f, 1.0f);
             picture->setBlendAlphaRatio(1.0f, 0.0f, 1.0f, 1.0f);
         }
+
         x_trans = 7;
         y_trans = 7;
     }
@@ -537,8 +537,9 @@ void dMenu_Collect_c::cursorAnime() {
             picture->setBlendColorRatio(0.0f, 1.0f, 1.0f, 1.0f);
             picture->setBlendAlphaRatio(0.0f, 1.0f, 1.0f, 1.0f);
         }
-        x_trans = 0xe;
-        y_trans = 0xe;
+
+        x_trans = 14;
+        y_trans = 14;
     }
 
     fopMsgM_paneTrans(&mA18[0], -x_trans, y_trans);
@@ -548,14 +549,35 @@ void dMenu_Collect_c::cursorAnime() {
 
     mA18[0].mUserArea++;
 
-    if (mA18[0].mUserArea >= 0x14) {
+    if (mA18[0].mUserArea >= 20) {
         mA18[0].mUserArea = 0;
     }
 }
 
 /* 8019D540-8019D5A8       .text stickDirection__15dMenu_Collect_cFUc */
-void dMenu_Collect_c::stickDirection(unsigned char) {
-    /* Nonmatching */
+int dMenu_Collect_c::stickDirection(unsigned char param_1) {
+    int ret = 0xFF;
+    switch(param_1) {
+    case 0:
+        return 0;
+    case 1:
+        return 1;
+    case 2:
+        return 2;
+    case 3:
+        return 3;
+    case 4:
+        return 4;
+    case 5:
+        return 5;
+    case 6:
+        return 6;
+    case 7:
+        ret = 7; // Seems like a fakematch
+    case 10:
+    default:
+        return ret;
+    }
 }
 
 /* 8019D5A8-8019E570       .text cursorMainMove__15dMenu_Collect_cFv */
