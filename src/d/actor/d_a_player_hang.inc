@@ -10,13 +10,13 @@
  * based on the original names of the functions it contains.
  */
 
+#include "d/dolzel.h" // IWYU pragma: keep
 #include "d/actor/d_a_player_HIO.h"
 #include "d/actor/d_a_player_main.h"
 
 /* 80133F1C-80133F40       .text getHangMoveAnmSpeed__9daPy_lk_cFv */
 f32 daPy_lk_c::getHangMoveAnmSpeed() {
-    return daPy_HIO_hang_c0::m.field_0x24 +
-           (mStickDistance * (daPy_HIO_hang_c0::m.field_0x28 - daPy_HIO_hang_c0::m.field_0x24));
+    return getAnmSpeedStickRate(daPy_HIO_hang_c0::m.field_0x24, daPy_HIO_hang_c0::m.field_0x28);
 }
 
 /* 80133F40-80133FB4       .text getHangDirectionFromAngle__9daPy_lk_cFv */
@@ -114,7 +114,7 @@ int daPy_lk_c::changeHangEndProc(int param_0) {
 
     mGndChk.SetPos(&pos);
     m35DC = dComIfG_Bgsp()->GroundCross(&mGndChk);
-    if (C_BG_MIN_HEIGHT != m35DC) {
+    if (-G_CM3D_F_INF != m35DC) {
         m3588 = dComIfG_Bgsp()->GetAttributeCode(mGndChk);
     } else {
         m3588 = dBgS_Attr_UNK1B_e;
@@ -281,7 +281,7 @@ BOOL daPy_lk_c::procHangFallStart_init(cM3dGPla* param_0) {
     mGndChk.SetPos(&local_34);
     f32 cross = dComIfG_Bgsp()->GroundCross(&mGndChk);
     local_34.y = cross;
-    if (local_34.y != C_BG_MIN_HEIGHT) {
+    if (local_34.y != -G_CM3D_F_INF) {
         if (local_34.y < -30.1f + current.pos.y) {
             return false;
         }

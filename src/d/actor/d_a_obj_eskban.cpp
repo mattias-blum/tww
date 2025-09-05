@@ -3,14 +3,13 @@
 // Translation Unit: d_a_obj_eskban.cpp
 //
 
+#include "d/dolzel_rel.h" // IWYU pragma: keep
 #include "d/actor/d_a_obj_eskban.h"
 #include "d/res/res_eskban.h"
 #include "d/d_procname.h"
+#include "d/d_priority.h"
 #include "d/d_com_inf_game.h"
 #include "f_op/f_op_actor_mng.h"
-
-#include "weak_bss_936_to_1036.h" // IWYU pragma: keep
-#include "weak_data_1811.h" // IWYU pragma: keep
 
 namespace daObjEskban {
 Mtx Act_c::M_tmp_mtx;
@@ -179,7 +178,7 @@ BOOL daObjEskban::Act_c::Delete() {
 BOOL daObjEskban::Act_c::Mthd_Delete() {
     s32 result = MoveBGDelete();
     if (fpcM_CreateResult(this) != cPhs_STOP_e) {
-        dComIfG_resDelete(&mPhs, M_arcname);
+        dComIfG_resDeleteDemo(&mPhs, M_arcname);
     }
     return result;
 }
@@ -276,7 +275,7 @@ BOOL daObjEskban::Act_c::Execute(Mtx** pMtx) {
         if (hitObj) {
             fopAc_ac_c* hitAct = hitObj->GetAc();
             if (hitAct && fopAcM_GetName(hitAct) == PROC_NPC_MD) {
-                cXyz dist = fopAcM_GetPosition(hitAct) - fopAcM_GetPosition(this);
+                cXyz dist = hitAct->current.pos - current.pos;
                 dist.y = 0;
                 if (dist.normalizeRS()) {
                     dist *= 10;
@@ -408,9 +407,6 @@ BOOL Mthd_Draw(void* i_this) {
     return ((Act_c*)i_this)->MoveBGDraw();
 }
 
-// Fakematch to fix weak func order/.text section splitting of dBgS_MoveBgActor::Draw().
-#pragma nosyminline off
-
 /* 00001540-0000156C       .text Mthd_IsDelete__Q211daObjEskban28@unnamed@d_a_obj_eskban_cpp@FPv */
 BOOL Mthd_IsDelete(void* i_this) {
     return ((Act_c*)i_this)->MoveBGIsDelete();
@@ -436,7 +432,7 @@ actor_process_profile_definition g_profile_Obj_Eskban = {
     /* SizeOther    */ 0,
     /* Parameters   */ 0,
     /* Leaf SubMtd  */ &g_fopAc_Method.base,
-    /* Priority     */ 0x007A,
+    /* Priority     */ PRIO_Obj_Eskban,
     /* Actor SubMtd */ &daObjEskban::Mthd_Eskban,
     /* Status       */ fopAcStts_NOCULLEXEC_e | fopAcStts_CULL_e | fopAcStts_UNK40000_e,
     /* Group        */ fopAc_ACTOR_e,

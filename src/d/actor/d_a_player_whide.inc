@@ -10,21 +10,19 @@
  * based on the original names of the functions it contains.
  */
 
+#include "d/dolzel.h" // IWYU pragma: keep
 #include "d/actor/d_a_player_HIO.h"
 #include "d/actor/d_a_player_main.h"
 
 /* 8013707C-801371E0       .text setBlendWHideMoveAnime__9daPy_lk_cFf */
 void daPy_lk_c::setBlendWHideMoveAnime(f32 param_0) {
-    float fVar1;
-    float fVar2;
-    float fVar3;
-    float fVar4;
-    float fVar5;
-    float fVar6;
-    float fVar7;
-    s16 sVar1;
-    daPy_ANM dVar5;
+    f32 fVar1;
+    f32 fVar5;
     daPy_ANM dVar6;
+    s16 sVar1;
+    f32 fVar6;
+    f32 fVar3;
+    daPy_ANM dVar5;
 
     if (!checkNoResetFlg0(daPyFlg0_UNK10000)) {
         fVar1 = daPy_HIO_wall_c0::m.field_0x14;
@@ -51,20 +49,24 @@ void daPy_lk_c::setBlendWHideMoveAnime(f32 param_0) {
             dVar5 = ANM_WALLWLDW;
         }
     }
-    fVar5 *= fVar4;
+    fVar5 *= param_0;
+    
+    f32 fVar7;
     fVar7 = mVelocity / mMaxNormalSpeed;
     if (fVar7 < 0.0f) {
         fVar7 = 0.0f;
     }
+    f32 fVar4;
     if (fVar7 < fVar3) {
         fVar4 = 1.0f - fVar7 / fVar3;
         m3598 = 1.0f;
     } else {
         fVar4 = 0.0f;
-        fVar2 = 1.0f;
-        m3598 = (fVar2 - ((fVar2 - fVar6) * (fVar7 - fVar3)) / (fVar2 - fVar3));
+        m3598 = (1.0f - ((1.0f - fVar6) * (fVar7 - fVar3)) / (1.0f - fVar3));
     }
+    
     setMoveAnime(fVar4, fVar1, 0.0f, dVar5, dVar6, 5, fVar5);
+    
     mFrameCtrlUnder[UNDER_MOVE0_e].setEnd(sVar1);
     mFrameCtrlUnder[UNDER_MOVE1_e].setFrame(mFrameCtrlUnder[UNDER_MOVE1_e].getEnd() - 0.001f);
     mFrameCtrlUnder[UNDER_MOVE1_e].setRate(0.0f);
@@ -99,7 +101,7 @@ cM3dGPla* daPy_lk_c::getWHideModePolygon(cXyz* param_0, cXyz* param_1, cXyz* par
     local_3c.z = param_2->z + cM_ssin(uVar3) * daPy_HIO_wall_c0::m.field_0x50;
     mGndChk.SetPos(&local_3c);
     float f31 = bgs->GroundCross(&mGndChk);
-    if (C_BG_MIN_HEIGHT != f31 && (!cBgW_CheckBGround(bgs->GetTriPla(mGndChk)->GetNP()->y))) {
+    if (-G_CM3D_F_INF != f31 && (!cBgW_CheckBGround(bgs->GetTriPla(mGndChk)->GetNP()->y))) {
         return NULL;
     }
 
@@ -197,7 +199,7 @@ BOOL daPy_lk_c::checkWHideBackWall(cXyz* param_0) {
 
     cXyz local_18;
     local_18.set(param_0->x - 25.0f * cM_ssin(shape_angle.y), param_0->y, param_0->z - 25.0f * cM_scos(shape_angle.y));
-    mLinkLinChk.Set(param_0, &local_18, (fopAc_ac_c*)this);
+    mLinkLinChk.Set(param_0, &local_18, this);
     if (dComIfG_Bgsp()->LineCross(&mLinkLinChk)) {
         return true;
     }
@@ -383,7 +385,7 @@ BOOL daPy_lk_c::procWHideWait() {
         mAcchCir[2].SetWallH(125.0f);
     }
 
-    if (mStickDistance > 0.05f && C_BG_MIN_HEIGHT != mAcch.GetGroundH() &&
+    if (mStickDistance > 0.05f && -G_CM3D_F_INF != mAcch.GetGroundH() &&
         cBgW_CheckBGround(dComIfG_Bgsp()->GetTriPla(mAcch.m_gnd)->GetNP()->y))
     {
         int direction = getDirectionFromCurrentAngle();
@@ -451,7 +453,7 @@ BOOL daPy_lk_c::procWHideMove() {
     f32 fVar2;
     if (checkWHideModeChange(&acStack_24) != 0) {
         fVar2 = 0.0f;
-    } else if (mStickDistance > 0.05f && C_BG_MIN_HEIGHT != mAcch.GetGroundH() &&
+    } else if (mStickDistance > 0.05f && -G_CM3D_F_INF != mAcch.GetGroundH() &&
                cBgW_CheckBGround(dComIfG_Bgsp()->GetTriPla(mAcch.m_gnd)->GetNP()->y))
     {
         int direction = getDirectionFromCurrentAngle();
@@ -491,7 +493,7 @@ BOOL daPy_lk_c::procWHideMove() {
     if (std::fabsf(mVelocity) <= 0.001f) {
         return procWHideWait_init();
     }
-    if (mAcch.GetGroundH() == C_BG_MIN_HEIGHT || !cBgW_CheckBGround(dComIfG_Bgsp()->GetTriPla(mAcch.m_gnd)->GetNP()->y) ||
+    if (mAcch.GetGroundH() == -G_CM3D_F_INF || !cBgW_CheckBGround(dComIfG_Bgsp()->GetTriPla(mAcch.m_gnd)->GetNP()->y) ||
         !checkWHideBackWall(&cStack_30))
     {
         mVelocity = 0.0f;

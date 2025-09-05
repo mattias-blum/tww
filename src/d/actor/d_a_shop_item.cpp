@@ -3,9 +3,11 @@
  * Item - Shop Item
  */
 
+#include "d/dolzel_rel.h" // IWYU pragma: keep
 #include "d/actor/d_a_shop_item.h"
 #include "f_op/f_op_actor_mng.h"
 #include "d/d_procname.h"
+#include "d/d_priority.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_s_play.h"
 #include "d/d_item.h"
@@ -157,7 +159,7 @@ bool daShopItem_c::_draw() {
     if(!chkDraw()) return true;
 
     if(m_itemNo == WATER_STATUE || m_itemNo == POSTMAN_STATUE) {
-        mpModel->getModelData()->getJointTree().getJointNodePointer(0)->setMtxCalc(0);
+        mpModel->getModelData()->getJointNodePointer(0)->setMtxCalc(0);
     }
     DrawBase();
     
@@ -285,7 +287,7 @@ actor_process_profile_definition g_profile_ShopItem = {
     /* SizeOther    */ 0,
     /* Parameters   */ 0,
     /* Leaf SubMtd  */ &g_fopAc_Method.base,
-    /* Priority     */ 0x00FE,
+    /* Priority     */ PRIO_ShopItem,
     /* Actor SubMtd */ &daShopItemMethodTable,
     /* Status       */ fopAcStts_CULL_e | fopAcStts_UNK4000_e | fopAcStts_UNK40000_e,
     /* Group        */ fopAc_ACTOR_e,

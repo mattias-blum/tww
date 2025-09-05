@@ -3,6 +3,7 @@
  * Tingle Tuner Cursor
  */
 
+#include "d/dolzel.h" // IWYU pragma: keep
 #include "d/actor/d_a_agb.h"
 #include "d/res/res_agb.h"
 #include "JSystem/JKernel/JKRHeap.h"
@@ -14,6 +15,7 @@
 #include "d/d_item_data.h"
 #include "d/d_meter.h"
 #include "d/d_procname.h"
+#include "d/d_priority.h"
 #include "d/d_kankyo_wether.h"
 #include "m_Do/m_Do_controller_pad.h"
 #include "m_Do/m_Do_dvd_thread.h"
@@ -24,14 +26,45 @@
 #include "d/actor/d_a_bomb.h"
 #include "stdio.h"
 
-#include "weak_bss_3569.h" // IWYU pragma: keep
-#include "weak_data_1811.h" // IWYU pragma: keep
+class daAgb_HIO_c : public mDoHIO_entry_c {
+public:
+    daAgb_HIO_c();
+    virtual ~daAgb_HIO_c() {}
+
+    void genMessage(JORMContext* ctx) {}
+
+public:
+    /* 0x04 */ J3DGXColorS10 field_0x04[2];
+    /* 0x14 */ f32 field_0x14;
+    /* 0x18 */ f32 field_0x18;
+    /* 0x1C */ f32 field_0x1c;
+    /* 0x20 */ f32 field_0x20;
+    /* 0x24 */ f32 field_0x24;
+    /* 0x28 */ f32 field_0x28;
+    /* 0x2C */ f32 field_0x2c;
+    /* 0x30 */ f32 field_0x30;
+};
+
+class dMsgCtrl_c {
+public:
+    int init(u16);
+    int execute();
+    ~dMsgCtrl_c() {}
+
+    int getSelectNum() { return mpMsg->mSelectNum; }
+    void setMsgStatus(u16 status) { mpMsg->mStatus = status; }
+
+public:
+    /* 0x00 */ u16 field_0x0;
+    /* 0x04 */ fpc_ProcID mMsgID;
+    /* 0x08 */ msg_class* mpMsg;
+};
 
 static mDoDvdThd_toMainRam_c* l_gbaCommand;
 
 int daAgb_c::mEffect;
 daAgb_c::daAgb_ItemBuy daAgb_c::mItemBuy;
-#if VERSION != VERSION_JPN
+#if VERSION > VERSION_JPN
 daAgb_c::daAgb_GbaFlg daAgb_c::mGbaFlg;
 daAgb_c::daAgb_Switch daAgb_c::mSwitch;
 daAgb_c::daAgb_Item daAgb_c::mItem;
@@ -90,7 +123,7 @@ int dMsgCtrl_c::execute() {
 
 static dMsgCtrl_c l_msgCtrl;
 
-#if VERSION == VERSION_JPN
+#if VERSION <= VERSION_JPN
 u8 sjis2chrNo(const char* i_chr) {
     static u8 l_sjis1chrNo[] = {
         0x2A, 0x2A, 0x2A, 0x2A, 0x2A, 0x2A, 0x2A, 0x2A,
@@ -267,7 +300,7 @@ void daAgb_c::NameConv() {
     mPlayerName = 0;
 
     for (i = 0; i < 8; i++) {
-#if VERSION == VERSION_JPN
+#if VERSION <= VERSION_JPN
         u8 chr = sjis2chrNo(name);
         mPlayerName |= chr;
         if (*name & 0x80)
@@ -364,7 +397,7 @@ int daAgb_c::uploadSelect() {
             fopMsgM_messageSet(6);  // "Now calling Tingle..."
             mUploadAction  = UpAct_UNK3;
 
-#if VERSION == VERSION_JPN
+#if VERSION <= VERSION_JPN
             l_gbaCommand = mDoDvdThd_toMainRam_c::create("/res/Gba/client.bin", 0, dMsg_getAgbWorkArea());
 #elif VERSION == VERSION_USA
             l_gbaCommand = mDoDvdThd_toMainRam_c::create("/res/Gba/client_u.bin", 0, dMsg_getAgbWorkArea());
@@ -377,7 +410,7 @@ int daAgb_c::uploadSelect() {
             strcat(path, ".bin");
             l_gbaCommand = mDoDvdThd_toMainRam_c::create(path, 0, dMsg_getAgbWorkArea());
 #endif
-            JUT_ASSERT(VERSION_SELECT(591, 860, 861), l_gbaCommand != NULL);
+            JUT_ASSERT(VERSION_SELECT(591, 591, 860, 861), l_gbaCommand != NULL);
 
             mDoGaC_GbaReboot();
             mDoGaC_setPortNo(mPortNo);
@@ -393,7 +426,7 @@ int daAgb_c::uploadSelect() {
 int daAgb_c::uploadJoyboot1() {
     if (l_gbaCommand->sync()) {
         void* programp = l_gbaCommand->getMemAddress();
-        JUT_ASSERT(VERSION_SELECT(622, 891, 892), programp != NULL);
+        JUT_ASSERT(VERSION_SELECT(622, 622, 891, 892), programp != NULL);
 
         JUTGba::getManager()->doJoyBoot(mDoGaC_getPortNo(), 3, -1, (u8*)programp,
                                         l_gbaCommand->getMemSize() - 4, NULL, NULL);
@@ -453,7 +486,7 @@ int daAgb_c::uploadMessageLoad() {
         strcat(path, ".bin");
         l_gbaCommand = mDoDvdThd_toMainRam_c::create(path, 0, NULL);
 #endif
-        JUT_ASSERT(VERSION_SELECT(715, 1000, 1001), l_gbaCommand != NULL);
+        JUT_ASSERT(VERSION_SELECT(715, 715, 1000, 1001), l_gbaCommand != NULL);
 
         mUploadAction  = UpAct_UNK7;
         mDoGaC_onComEnable();
@@ -476,7 +509,7 @@ int daAgb_c::uploadMessageLoad2() {
 int daAgb_c::uploadConnect() {
     if (mDoGaC_getComEnable() && mDoGaC_GbaLink()) {
         void* programp = l_gbaCommand->getMemAddress();
-        JUT_ASSERT(VERSION_SELECT(760, 1045, 1046), programp != NULL);
+        JUT_ASSERT(VERSION_SELECT(760, 760, 1045, 1046), programp != NULL);
         mDoGac_SendDataSet((u32*)programp, l_gbaCommand->getMemSize(), 0, 0);
 
         mUploadAction  = UpAct_UNK8;
@@ -516,7 +549,7 @@ int daAgb_c::uploadMessageSend() {
             delete l_gbaCommand;
         }
     } else if (mDoGaC_getDataStatus(0) == 9) {
-#if VERSION == VERSION_JPN
+#if VERSION <= VERSION_JPN
         mUploadAction = UpAct_UNK5;
 #else
         field_0x664 = 5;
@@ -527,7 +560,7 @@ int daAgb_c::uploadMessageSend() {
     return 1;
 }
 
-#if VERSION != VERSION_JPN
+#if VERSION > VERSION_JPN
 /* 800D01F4-800D021C       .text uploadRetryWait__7daAgb_cFv */
 int daAgb_c::uploadRetryWait() {
     field_0x664--;
@@ -575,7 +608,7 @@ daAgb_c::uploadFunc daAgb_c::uploadFuncTable[] = {
     &daAgb_c::uploadMessageLoad,
     &daAgb_c::uploadMessageLoad2,
     &daAgb_c::uploadMessageSend,
-#if VERSION != VERSION_JPN
+#if VERSION > VERSION_JPN
     &daAgb_c::uploadRetryWait,
 #endif
     &daAgb_c::uploadMsgEndWait,
@@ -735,7 +768,7 @@ void daAgb_c::resetCursor(bool param_0) {
 }
 
 /* 800D070C-800D0734       .text FlashCheck__7daAgb_cFv */
-bool daAgb_c::FlashCheck() {
+BOOL daAgb_c::FlashCheck() {
     if (mIsFree || mFollowTarget == true) {
         return true;
     }
@@ -1310,7 +1343,7 @@ void daAgb_c::CursorMove(fopAc_ac_c* actor, u32 stage_type) {
     
     cXyz r1_14;
     dBgS_GndChk r1_5C;
-    f32 f30 = C_BG_MIN_HEIGHT;
+    f32 f30 = -G_CM3D_F_INF;
     r1_5C.OffWall();
     r1_14.y = actor->current.pos.y + 150.0f;
     static cXy l_ckOffset[] = {
@@ -1716,7 +1749,7 @@ static BOOL createHeap_CB(fopAc_ac_c* i_this) {
 /* 800D396C-800D3B58       .text createHeap__7daAgb_cFv */
 BOOL daAgb_c::createHeap() {
     J3DModelData* modelData = (J3DModelData*)dComIfG_getObjectRes("Agb", AGB_BDL_AGBCURSOR);
-    JUT_ASSERT(VERSION_SELECT(2960, 3277, 3286), modelData != NULL);
+    JUT_ASSERT(VERSION_SELECT(2960, 2960, 3277, 3286), modelData != NULL);
 
     mpModel = mDoExt_J3DModel__create(modelData, 0x80000, 0x11000002);
     if (mpModel == NULL) {
@@ -1801,7 +1834,7 @@ actor_process_profile_definition g_profile_AGB = {
     /* SizeOther    */ 0,
     /* Parameters   */ 0,
     /* Leaf SubMtd  */ &g_fopAc_Method.base,
-    /* Priority     */ 0x000C,
+    /* Priority     */ PRIO_AGB,
     /* Actor SubMtd */ &l_daAgb_Method,
     /* Status       */ fopAcStts_UNK4000_e | fopAcStts_NOPAUSE_e | fopAcStts_UNK40000_e,
     /* Group        */ fopAc_ACTOR_e,

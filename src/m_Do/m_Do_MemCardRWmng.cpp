@@ -83,6 +83,11 @@ s32 mDoMemCdRWm_Store(CARDFileInfo* card, void* data, u32 size) {
                 if (ret != CARD_ERROR_READY) return ret;
                 ret = CARDRead(card, sTmpBuf, sizeof(card_pictdata), (slot + i) * sizeof(card_pictdata));
                 if (ret != CARD_ERROR_READY) return ret;
+#if VERSION == VERSION_DEMO
+                if (!mDoMemCdRWm_TestCheckSumPictData(sTmpBuf)) {
+                    return ret;
+                }
+#endif
             }
         }
     }
@@ -192,7 +197,7 @@ s32 mDoMemCdRWm_Restore2(CARDFileInfo* card) {
 
 /* 80019F4C-8001A0A8       .text mDoMemCdRWm_BuildHeader__FP22mDoMemCdRWm_HeaderData */
 void mDoMemCdRWm_BuildHeader(mDoMemCdRWm_HeaderData* header) {
-#if VERSION == VERSION_JPN
+#if VERSION <= VERSION_JPN
     snprintf(header->comment, sizeof(header->comment), "ゼルダの伝説～風のタクト～");
 #else
     snprintf(header->comment, sizeof(header->comment), "Zelda: The Wind Waker");
@@ -200,7 +205,7 @@ void mDoMemCdRWm_BuildHeader(mDoMemCdRWm_HeaderData* header) {
     OSTime time = OSGetTime();
     OSCalendarTime cal;
     OSTicksToCalendarTime(time, &cal);
-#if VERSION == VERSION_JPN
+#if VERSION <= VERSION_JPN
     snprintf(header->info, sizeof(header->info), "%d月%d日のセーブデータです", cal.month + 1, cal.day_of_month);
 #elif VERSION == VERSION_USA
     snprintf(header->info, sizeof(header->info), "%d/%d Save Data", cal.month + 1, cal.day_of_month);
@@ -306,8 +311,7 @@ u32 mDoMemCdRWm_CalcCheckSum(void* p_, u32 size) {
 u16 mDoMemCdRWm_CalcCheckSumPictData(void* p, u32 size) {
     u16 csum = 0;
     for (int i = 0; i < size; i++) {
-        u8 v = ((u8*)p)[i];
-        csum += v;
+        csum += ((u8*)p)[i];
     }
     return csum;
 }

@@ -3,6 +3,7 @@
  * Object - Rito Postbox
  */
 
+#include "d/dolzel_rel.h" // IWYU pragma: keep
 #include "d/actor/d_a_obj_toripost.h"
 #include "d/res/res_toripost.h"
 #include "JSystem/JUtility/JUTAssert.h"
@@ -15,10 +16,25 @@
 #include "d/d_s_play.h"
 #include "d/d_a_obj.h"
 #include "d/d_procname.h"
+#include "d/d_priority.h"
 #include "m_Do/m_Do_ext.h"
 #include "m_Do/m_Do_mtx.h"
 
-#include "weak_data_1811.h" // IWYU pragma: keep
+class daObjTpost_HIO_c {
+public:
+    daObjTpost_HIO_c();
+    virtual ~daObjTpost_HIO_c() {}
+
+    /* 0x04 */ s8 mNo;
+    /* 0x05 */ bool debug_draw;
+    /* 0x06 */ s8 field_0x06;
+    /* 0x07 */ u8 field_0x07;
+    /* 0x08 */ f32 attn_pos_offset;
+    /* 0x0C */ f32 eye_pos_offset;
+    /* 0x10 */ f32 talk_distance;
+    /* 0x14 */ s16 field_0x14;
+    /* 0x16 */ s16 field_0x16;
+};
 
 extern dScnPly_reg_HIO_c g_regHIO;
 
@@ -63,12 +79,16 @@ const dCcD_SrcCyl daObjTpost_c::m_cyl_src = {
         /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCylS
-    {
-        /* Center */ 0.0f, 0.0f, 0.0f,
+    {{
+        /* Center */ {0.0f, 0.0f, 0.0f},
         /* Radius */ 0.0f,
         /* Height */ 0.0f,
-    },
+    }},
 };
+
+#ifdef __MWERKS__
+static
+#endif
 const s32 daObjTpost_c::m_send_price[] = {
     0x05,
     0x0A,
@@ -367,7 +387,7 @@ int daObjTpost_c::getMsgNormal() {
         field_0x8EB = 0;
     }
     else {
-        if(dKy_daynight_check() == false) {
+        if(dKy_daynight_check() == dKy_TIME_DAY_e) {
             msgId = 0xCE5;
         }
         else {
@@ -722,7 +742,7 @@ void daObjTpost_c::modeTalkXY() {
 
         if(field_0x8E4 != -1 && cLib_calcTimer(&field_0x8E4) == 0) {
             player->changeOriginalDemo();
-            player->changeDemoMode(daPy_demo_c::DEMO_UNK18_e);
+            player->changeDemoMode(daPy_demo_c::DEMO_SURPRISED_e);
 
             field_0x8E4 = -1;
         }
@@ -734,7 +754,7 @@ void daObjTpost_c::modeTalkXY() {
             case 0xCF1:
                 if(player->getBaseAnimeFrameRate() == 0.0f) {
                     player->changeOriginalDemo();
-                    player->changeDemoMode(daPy_demo_c::DEMO_UNK01_e);
+                    player->changeDemoMode(daPy_demo_c::DEMO_N_WAIT_e);
                 }
 
                 break;
@@ -942,7 +962,7 @@ void daObjTpost_c::createInit() {
     modeProcInit(MODE_WAIT);
 
     mAcchCir.SetWall(30.0f, 30.0f);
-    mAcch.Set(&current.pos, &old.pos, this, 1, &mAcchCir, &speed);
+    mAcch.Set(fopAcM_GetPosition_p(this), fopAcM_GetOldPosition_p(this),  this, 1, &mAcchCir, fopAcM_GetSpeed_p(this));
     mAcch.SetRoofNone();
     gravity = -4.5f;
 
@@ -1020,7 +1040,7 @@ actor_process_profile_definition g_profile_OBJ_TORIPOST = {
     /* SizeOther    */ 0,
     /* Parameters   */ 0,
     /* Leaf SubMtd  */ &g_fopAc_Method.base,
-    /* Priority     */ 0x01B3,
+    /* Priority     */ PRIO_OBJ_TORIPOST,
     /* Actor SubMtd */ &daObjTpostMethodTable,
     /* Status       */ 0x18 | fopAcStts_SHOWMAP_e | fopAcStts_CULL_e | fopAcStts_UNK40000_e | fopAcStts_UNK200000_e,
     /* Group        */ fopAc_ACTOR_e,

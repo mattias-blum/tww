@@ -3,6 +3,7 @@
 // Translation Unit: d_resorce.cpp
 //
 
+#include "d/dolzel.h" // IWYU pragma: keep
 #include "d/d_resorce.h"
 #include "JSystem/JKernel/JKRMemArchive.h"
 #include "d/d_com_inf_game.h"
@@ -455,7 +456,7 @@ int dRes_info_c::setRes() {
 
         u32 heapSize = mDataHeap->getHeapSize();
         void* heapStartAddr = mDataHeap->getStartAddr();
-#if VERSION == VERSION_JPN
+#if VERSION <= VERSION_JPN
         DCFlushRangeNoSync(heapStartAddr, heapSize);
 #else
         DCStoreRangeNoSync(heapStartAddr, heapSize);

@@ -8,7 +8,6 @@
 #include "JSystem/J2DGraph/J2DScreen.h"
 #include "SSystem/SComponent/c_phase.h"
 
-
 class dDlst_Gameover_CAPTURE_c : public dDlst_base_c {
 public:
     virtual ~dDlst_Gameover_CAPTURE_c() {}
@@ -57,7 +56,7 @@ public:
 private:
     /* 0x004 */ J2DScreen* scrn;
     /* 0x008 */ fopMsgM_pane_class letter[8];
-#if VERSION != VERSION_JPN
+#if VERSION > VERSION_JPN
     /* 0x1C8 */ u8 field_0x1c8[0x318 - 0x1c8];
 #endif
     /* Offsets below are for USA/PAL */
