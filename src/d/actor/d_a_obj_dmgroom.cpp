@@ -3,6 +3,7 @@
 // Translation Unit: d_a_obj_dmgroom.cpp
 //
 
+#include "d/dolzel_rel.h" // IWYU pragma: keep
 #include "d/actor/d_a_obj_dmgroom.h"
 #include "d/res/res_dmgroom.h"
 #include "f_op/f_op_actor_mng.h"
@@ -10,6 +11,7 @@
 #include "d/d_bg_w.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_procname.h"
+#include "d/d_priority.h"
 #include "m_Do/m_Do_ext.h"
 #include "m_Do/m_Do_mtx.h"
 
@@ -135,7 +137,7 @@ actor_process_profile_definition g_profile_Obj_Dmgroom = {
     /* SizeOther    */ 0,
     /* Parameters   */ 0,
     /* Leaf SubMtd  */ &g_fopAc_Method.base,
-    /* Priority     */ 0x001D,
+    /* Priority     */ PRIO_Obj_Dmgroom,
     /* Actor SubMtd */ &daObj_DmgroomMethodTable,
     /* Status       */ fopAcStts_UNK40000_e,
     /* Group        */ fopAc_ACTOR_e,

@@ -3,12 +3,12 @@
 // Translation Unit: d_a_warpfout.cpp
 //
 
+#include "d/dolzel_rel.h" // IWYU pragma: keep
 #include "d/actor/d_a_warpfout.h"
 #include "d/d_camera.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_procname.h"
-
-#include "weak_data_1811.h" // IWYU pragma: keep
+#include "d/d_priority.h"
 
 static daWarpfout_c::EventActionInitFunc event_init_tbl[] = {
     &daWarpfout_c::initWarp1, &daWarpfout_c::initWarp2, &daWarpfout_c::initWarp3,
@@ -227,7 +227,7 @@ actor_process_profile_definition g_profile_WARPFOUT = {
     /* SizeOther    */ 0,
     /* Parameters   */ 0,
     /* Leaf SubMtd  */ &g_fopAc_Method.base,
-    /* Priority     */ 0x01A3,
+    /* Priority     */ PRIO_WARPFOUT,
     /* Actor SubMtd */ &daWarpfoutMethodTable,
     /* Status       */ fopAcStts_CULL_e | fopAcStts_UNK40000_e,
     /* Group        */ fopAc_ACTOR_e,

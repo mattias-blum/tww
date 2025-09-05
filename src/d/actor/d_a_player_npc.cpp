@@ -3,6 +3,7 @@
 // Translation Unit: d_a_player_npc.cpp
 //
 
+#include "d/dolzel.h" // IWYU pragma: keep
 #include "d/actor/d_a_player_npc.h"
 #include "d/d_com_inf_game.h"
 #include "m_Do/m_Do_lib.h"
@@ -13,7 +14,7 @@
 int daPy_npc_c::check_initialRoom() {
     if (home.roomNo < 0) {
         mAcch.CrrPos(*dComIfG_Bgsp());
-        if (mAcch.GetGroundH() == C_BG_MIN_HEIGHT || dComIfG_Bgsp()->GetGroundCode(mAcch.m_gnd) == 4) {
+        if (mAcch.GetGroundH() == -G_CM3D_F_INF || dComIfG_Bgsp()->GetGroundCode(mAcch.m_gnd) == 4) {
             return 0;
         }
         int roomNo = dComIfG_Bgsp()->GetRoomId(mAcch.m_gnd);

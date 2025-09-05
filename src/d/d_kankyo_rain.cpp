@@ -3,6 +3,7 @@
 // Translation Unit: d_kankyo_rain.cpp
 //
 
+#include "d/dolzel.h" // IWYU pragma: keep
 #include "d/d_kankyo_rain.h"
 #include "d/d_bg_s_gnd_chk.h"
 #include "d/d_bg_s_roof_chk.h"
@@ -726,7 +727,7 @@ bool overhead_bg_chk() {
     pos.y += 50.0f;
     roofChk.SetPos(pos);
 
-    if (dComIfG_Bgsp()->RoofChk(&roofChk) != C_BG_MAX_HEIGHT)
+    if (dComIfG_Bgsp()->RoofChk(&roofChk) != G_CM3D_F_INF)
         ret = true;
     pos.y += 10000.0f;
     gndChk.SetPos(&pos);
@@ -755,7 +756,7 @@ bool forward_overhead_bg_chk(cXyz* pPos, f32 dist) {
     *pPos = pos;
     roofChk.SetPos(pos);
 
-    if (dComIfG_Bgsp()->RoofChk(&roofChk) != C_BG_MAX_HEIGHT)
+    if (dComIfG_Bgsp()->RoofChk(&roofChk) != G_CM3D_F_INF)
         ret = true;
     pos.y += 10000.0f;
     gndChk.SetPos(&pos);
@@ -883,7 +884,7 @@ void wave_move() {
     }
 
     dKy_set_eyevect_calc2(pCamera, &eyevect, g_env_light.mWaveChan.mWaveSpawnDist, 0.0f);
-    d0.zero();
+    d0.x = d0.y = d0.z = 0.0f;
 
     windVecP = dKyw_get_wind_vec();
     windPow = dKyw_get_wind_pow();
@@ -924,7 +925,7 @@ void wave_move() {
         windPow = 0.6f;
     }
 
-    d0.zero();
+    d0.x = d0.y = d0.z = 0.0f;
 
     deltaXZ.x = pCamera->mLookat.mCenter.x - pCamera->mLookat.mEye.x;
     deltaXZ.y = 0.0f;
@@ -1661,7 +1662,7 @@ void dKyr_drawSun(Mtx drawMtx, cXyz* pPos, GXColor& reg0, u8** pImg) {
                 GXEnd();
             }
         }
-#if VERSION != VERSION_JPN
+#if VERSION > VERSION_JPN
         J3DShape::resetVcdVatCache();
 #endif
     }
@@ -1733,7 +1734,7 @@ void dKyr_drawRain(Mtx drawMtx, u8** pImg) {
             GXSetAlphaCompare(GX_GREATER, 0, GX_AOP_OR, GX_GREATER, 0);
             GXSetZMode(true, GX_LEQUAL, false);
             GXSetCullMode(GX_CULL_NONE);
-#if VERSION != VERSION_JPN
+#if VERSION > VERSION_JPN
             GXSetClipMode(GX_CLIP_DISABLE);
 #endif
             GXSetNumIndStages(0);
@@ -1823,7 +1824,7 @@ void dKyr_drawRain(Mtx drawMtx, u8** pImg) {
                 }
             }
 
-#if VERSION != VERSION_JPN
+#if VERSION > VERSION_JPN
             GXSetClipMode(GX_CLIP_ENABLE);
             J3DShape::resetVcdVatCache();
 #endif
@@ -1891,7 +1892,7 @@ void dKyr_drawSibuki(Mtx drawMtx, u8** pImg) {
     GXSetAlphaCompare(GX_GREATER, 0, GX_AOP_OR, GX_GREATER, 0);
     GXSetZMode(true, GX_GEQUAL, false);
     GXSetCullMode(GX_CULL_NONE);
-#if VERSION != VERSION_JPN
+#if VERSION > VERSION_JPN
     GXSetClipMode(GX_CLIP_DISABLE);
 #endif
     GXSetNumIndStages(0);
@@ -1954,7 +1955,7 @@ void dKyr_drawSibuki(Mtx drawMtx, u8** pImg) {
         GXEnd();
     }
 
-#if VERSION != VERSION_JPN
+#if VERSION > VERSION_JPN
     GXSetClipMode(GX_CLIP_ENABLE);
     J3DShape::resetVcdVatCache();
 #endif
@@ -2098,7 +2099,7 @@ void drawPoison(Mtx drawMtx, u8** pImg) {
         GXEnd();
     }
 
-#if VERSION != VERSION_JPN
+#if VERSION > VERSION_JPN
     GXSetClipMode(GX_CLIP_ENABLE);
     J3DShape::resetVcdVatCache();
 #endif
@@ -2272,7 +2273,7 @@ void drawWave(Mtx drawMtx, u8** pImg) {
         }
     }
 
-#if VERSION != VERSION_JPN
+#if VERSION > VERSION_JPN
     J3DShape::resetVcdVatCache();
 #endif
 }
@@ -2304,7 +2305,7 @@ void drawCloudShadow(Mtx drawMtx, u8** pImg) {
         return;
     }
 
-#if VERSION != VERSION_JPN
+#if VERSION > VERSION_JPN
     GXSetClipMode(GX_CLIP_DISABLE);
 #endif
 
@@ -2417,7 +2418,7 @@ void drawCloudShadow(Mtx drawMtx, u8** pImg) {
         GXEnd();
     }
 
-#if VERSION != VERSION_JPN
+#if VERSION > VERSION_JPN
     GXSetClipMode(GX_CLIP_ENABLE);
     J3DShape::resetVcdVatCache();
 #endif

@@ -10,13 +10,13 @@
  * based on the original names of the functions it contains.
  */
 
+#include "d/dolzel.h" // IWYU pragma: keep
 #include "d/actor/d_a_player_main.h"
 #include "d/actor/d_a_player_HIO.h"
 
 /* 80135B50-80135B74       .text getClimbMoveAnmSpeed__9daPy_lk_cFv */
 f32 daPy_lk_c::getClimbMoveAnmSpeed() {
-    return daPy_HIO_ladder_c0::m.field_0x34 +
-           (mStickDistance * (daPy_HIO_ladder_c0::m.field_0x30 - daPy_HIO_ladder_c0::m.field_0x34));
+    return getAnmSpeedStickRate(daPy_HIO_ladder_c0::m.field_0x34, daPy_HIO_ladder_c0::m.field_0x30);
 }
 
 /* 80135B74-80135DA0       .text setClimbShapeOffset__9daPy_lk_cFv */
@@ -190,7 +190,7 @@ void daPy_lk_c::checkBgClimbMove() {
         local_5c.set(current.pos.x + (25.0f * dVar7), local_68.y + 30.0f, current.pos.z + (25.0f * dVar6));
         mGndChk.SetPos(&local_5c);
         dVar3 = dComIfG_Bgsp()->GroundCross(&mGndChk);
-        if (C_BG_MIN_HEIGHT != dVar3 && cBgW_CheckBGround(dComIfG_Bgsp()->GetTriPla(mGndChk)->GetNP()->y) &&
+        if (-G_CM3D_F_INF != dVar3 && cBgW_CheckBGround(dComIfG_Bgsp()->GetTriPla(mGndChk)->GetNP()->y) &&
             dVar3 >= local_68.y - 30.0f)
         {
             dVar4 = 3.0f;

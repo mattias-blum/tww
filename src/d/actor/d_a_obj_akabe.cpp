@@ -3,12 +3,14 @@
 // Translation Unit: d_a_obj_akabe.cpp
 //
 
+#include "d/dolzel_rel.h" // IWYU pragma: keep
 #include "d/actor/d_a_obj_akabe.h"
 #include "d/res/res_akabe.h"
 #include "d/res/res_akabed.h"
 #include "d/res/res_akabek.h"
 #include "d/res/res_nbox.h"
 #include "d/d_procname.h"
+#include "d/d_priority.h"
 #include "d/d_com_inf_game.h"
 #include "m_Do/m_Do_mtx.h"
 
@@ -197,7 +199,7 @@ actor_process_profile_definition g_profile_Obj_Akabe = {
     /* SizeOther    */ 0,
     /* Parameters   */ 0,
     /* Leaf SubMtd  */ &g_fopAc_Method.base,
-    /* Priority     */ 0x0033,
+    /* Priority     */ PRIO_Obj_Akabe,
     /* Actor SubMtd */ &daObjAkabe::Mthd_Table,
     /* Status       */ fopAcStts_NOCULLEXEC_e | fopAcStts_CULL_e | fopAcStts_UNK40000_e,
     /* Group        */ fopAc_ACTOR_e,

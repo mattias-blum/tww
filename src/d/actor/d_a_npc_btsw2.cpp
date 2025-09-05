@@ -3,19 +3,34 @@
 // Translation Unit: d_a_npc_btsw2.cpp
 //
 
+#include "d/dolzel_rel.h" // IWYU pragma: keep
 #include "d/actor/d_a_npc_btsw2.h"
 #include "d/res/res_btsw.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_item.h"
 #include "d/d_procname.h"
+#include "d/d_priority.h"
 #include "d/d_snap.h"
 #include "f_op/f_op_actor_mng.h"
 #include "m_Do/m_Do_ext.h"
 #include "m_Do/m_Do_mtx.h"
 #include "SSystem/SComponent/c_angle.h"
 
-#include "weak_bss_936_to_1036.h" // IWYU pragma: keep
-#include "weak_data_1811.h" // IWYU pragma: keep
+class daNpc_Btsw2_HIO_c {
+public:
+    daNpc_Btsw2_HIO_c();
+    virtual ~daNpc_Btsw2_HIO_c() {}
+
+public:
+    /* 0x04 */ s8 mNo;
+    /* 0x08 */ dNpc_HIO_c mNpc;
+    /* 0x30 */ s16 m30;
+    /* 0x32 */ s16 m32;
+    /* 0x34 */ f32 m34;
+    /* 0x38 */ f32 m38;
+    /* 0x3C */ s16 m3C;
+    /* 0x3E */ s16 m3E;
+};
 
 static daNpc_Btsw2_HIO_c l_HIO;
 
@@ -42,11 +57,11 @@ static dCcD_SrcCyl l_cyl_src = {
         /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCylS
-    {
-        /* Center */ 0.0f, 0.0f, 0.0f,
+    {{
+        /* Center */ {0.0f, 0.0f, 0.0f},
         /* Radius */ 30.0f,
         /* Height */ 80.0f,
-    },
+    }},
 };
 
 /* 000000EC-000001A8       .text __ct__17daNpc_Btsw2_HIO_cFv */
@@ -107,11 +122,10 @@ static BOOL nodeCallBack(J3DNode* node, int calcTiming) {
             u16 jointNo = joint->getJntNo();
             mDoMtx_stack_c::copy(model->getAnmMtx(jointNo));
             if (jointNo == i_this->m_jnt.getHeadJntNum()) {
-                mDoMtx_stack_c::multVec(&a_att_pos_offst, &i_this->mAttPos);
+                mDoMtx_stack_c::multVec(&a_att_pos_offst, &i_this->getAttentionBasePos());
                 Mtx sp14;
                 cMtx_copy(mDoMtx_stack_c::get(), sp14);
-                cXyz sp8;
-                mDoMtx_multVecZero(sp14, &sp8);
+                cXyz sp8(sp14[0][3], sp14[1][3], sp14[2][3]);
                 sp14[0][3] = sp14[1][3] = sp14[2][3] = 0.0f;
                 mDoMtx_stack_c::transS(sp8);
                 mDoMtx_stack_c::YrotM(i_this->current.angle.y + i_this->m_jnt.getHead_y());
@@ -135,7 +149,7 @@ BOOL daNpc_Btsw2_c::initTexPatternAnm(bool i_modify) {
     J3DModelData* modelData = mpMorf->getModel()->getModelData();
     m_btp = static_cast<J3DAnmTexPattern*>(dComIfG_getObjectRes(m_arc_name, l_btp_ix_tbl[m744]));
     JUT_ASSERT(282, m_btp != NULL);
-    if (!mBtpAnm.init(modelData, m_btp, TRUE, J3DFrameCtrl::EMode_LOOP, 1.0f, 0, -1, i_modify, 0)) {
+    if (!mBtpAnm.init(modelData, m_btp, TRUE, J3DFrameCtrl::EMode_LOOP, 1.0f, 0, -1, i_modify, FALSE)) {
         return FALSE;
     }
     mBtpFrame = 0;
@@ -283,7 +297,7 @@ u32 daNpc_Btsw2_c::getMsg() {
     if (!dComIfGs_isEventBit(0x3102)) {
         dComIfGs_onEventBit(0x3102);
         msgNo = 0x1AB0;
-    } else if (dKy_daynight_check()) {
+    } else if (dKy_daynight_check() != dKy_TIME_DAY_e) {
         msgNo = 0x1AB2;
     } else {
         msgNo = 0x1AB1;
@@ -381,7 +395,7 @@ BOOL daNpc_Btsw2_c::CreateHeap() {
     modelData->getJointNodePointer(m_jnt.getBackboneJntNum())->setCallBack(nodeCallBack);
     mpMorf->getModel()->setUserArea((u32)this);
     mAcchCir.SetWall(30.0f, 0.0f);
-    mObjAcch.Set(&current.pos, &old.pos, this, 1, &mAcchCir, &speed);
+    mObjAcch.Set(fopAcM_GetPosition_p(this), fopAcM_GetOldPosition_p(this), this, 1, &mAcchCir, fopAcM_GetSpeed_p(this));
     
     return TRUE;
 }
@@ -399,7 +413,7 @@ BOOL daNpc_Btsw2_c::CreateInit() {
     setCollision(60.0f, 150.0f);
     m724 = 0;
     mPathNo = fopAcM_GetParamBit(fopAcM_GetParam(this), 0x10, 8);
-    mpPath = dPath_GetRoomPath(mPathNo, current.roomNo);
+    mpPath = dPath_GetRoomPath(mPathNo, fopAcM_GetRoomNo(this));
     mFinalPathPntIdx = mpPath->m_num - 1;
     m73E = 1.0f + cM_rndF(3.0f);
     m742 = 90.0f + cM_rndF(300.0f);
@@ -554,7 +568,12 @@ cPhs_State daNpc_Btsw2_c::_create() {
 /* 00001C34-00001C8C       .text _delete__13daNpc_Btsw2_cFv */
 BOOL daNpc_Btsw2_c::_delete() {
     dComIfG_resDelete(&mPhs, m_arc_name);
-    if (heap && mpMorf) {
+#if VERSION == VERSION_DEMO
+    if (mpMorf)
+#else
+    if (heap && mpMorf)
+#endif
+    {
         mpMorf->stopZelAnime();
     }
     return TRUE;
@@ -660,7 +679,7 @@ actor_process_profile_definition g_profile_NPC_BTSW2 = {
     /* SizeOther    */ 0,
     /* Parameters   */ 0,
     /* Leaf SubMtd  */ &g_fopAc_Method.base,
-    /* Priority     */ 0x0163,
+    /* Priority     */ PRIO_NPC_BTSW2,
     /* Actor SubMtd */ &l_daNpc_Btsw2_Method,
     /* Status       */ 0x07 | fopAcStts_SHOWMAP_e | fopAcStts_NOCULLEXEC_e | fopAcStts_CULL_e | fopAcStts_UNK40000_e,
     /* Group        */ fopAc_ACTOR_e,

@@ -3,8 +3,10 @@
 // Translation Unit: d_a_tag_event.cpp
 //
 
+#include "d/dolzel_rel.h" // IWYU pragma: keep
 #include "d/actor/d_a_tag_event.h"
 #include "d/d_procname.h"
+#include "d/d_priority.h"
 #include "d/d_com_inf_game.h"
 #include "d/actor/d_a_bk.h"
 #include "d/actor/d_a_dr.h"
@@ -251,7 +253,7 @@ BOOL daTag_Event_c::actionHunt() {
 
     if (swbit != 0xFF && dComIfGs_isSwitch(swbit, fopAcM_GetRoomNo(this))) {
         setActio(ACTION_WAIT);
-    } else if (sp20.abs2XZ() < (scale.x*scale.x) * (100.0f*100.0f) && sp20.y <= scale.y * 100.0f) {
+    } else if (sp20.abs2XZ() < SQUARE(scale.x) * SQUARE(100.0f) && sp20.y <= scale.y * 100.0f) {
         setActio(ACTION_READY);
         fopAcM_orderOtherEventId(this, mEventIdx, getEventNo());
         if (cancelShutter()) {
@@ -347,7 +349,7 @@ BOOL daTag_Event_c::actionSpeHunt() {
     if (sp20.y < 0.0f) {
         sp20.y = -sp20.y;
     }
-    if (sp20.abs2XZ() < (scale.x*scale.x) * (100.0f*100.0f) && sp20.y <= scale.y * 100.0f) {
+    if (sp20.abs2XZ() < SQUARE(scale.x) * SQUARE(100.0f) && sp20.y <= scale.y * 100.0f) {
         setActio(ACTION_SPE_READY);
         fopAcM_orderOtherEventId(this, mEventIdx);
     }
@@ -418,7 +420,7 @@ BOOL daTag_Event_c::actionMjHunt() {
 
     if (swbit != 0xFF && dComIfGs_isSwitch(swbit, fopAcM_GetRoomNo(this))) {
         setActio(ACTION_WAIT);
-    } else if (sp20.abs2XZ() < (scale.x*scale.x) * (100.0f*100.0f) && sp20.y <= scale.y * 100.0f) {
+    } else if (sp20.abs2XZ() < SQUARE(scale.x) * SQUARE(100.0f) && sp20.y <= scale.y * 100.0f) {
         if (dComIfGp_checkPlayerStatus0(0, daPyStts0_SHIP_RIDE_e)) {
             mEventIdx = dComIfGp_evmng_getEventIdx(NULL, getEventNo());
         } else {
@@ -513,12 +515,10 @@ cPhs_State daTag_Event_c::create() {
 
     if (getType() == 0xD) {
         setActio(ACTION_SPE_ARRIVAL);
+    } else if (mEventIdx != -1 && (swbit == 0xFF || !dComIfGs_isSwitch(swbit, fopAcM_GetRoomNo(this)))) {
+        setActio(ACTION_ARRIVAL);
     } else {
-        if (mEventIdx != -1 && (swbit == 0xFF || !dComIfGs_isSwitch(swbit, fopAcM_GetRoomNo(this)))) {
-            setActio(ACTION_ARRIVAL);
-        } else {
-            setActio(ACTION_WAIT);
-        }
+        setActio(ACTION_WAIT);
     }
 
     shape_angle.x = shape_angle.z = 0;
@@ -571,7 +571,7 @@ actor_process_profile_definition g_profile_TAG_EVENT = {
     /* SizeOther    */ 0,
     /* Parameters   */ 0,
     /* Leaf SubMtd  */ &g_fopAc_Method.base,
-    /* Priority     */ 0x011E,
+    /* Priority     */ PRIO_TAG_EVENT,
     /* Actor SubMtd */ &l_daTag_Event_Method,
     /* Status       */ fopAcStts_UNK4000_e | fopAcStts_UNK40000_e,
     /* Group        */ fopAc_ACTOR_e,
