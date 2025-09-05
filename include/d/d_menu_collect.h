@@ -48,8 +48,8 @@ public:
     void initialize();
     void cursorAnime();
     int stickDirection(unsigned char);
-    void cursorMainMove();
-    void noteCheck();
+    int cursorMainMove();
+    BOOL noteCheck();
     void noteInit();
     void noteAppear();
     void noteOpen();
@@ -83,7 +83,7 @@ public:
     void outFontInit();
     void outFontMove();
     void outFontDraw();
-    void collectItemGetCheck(unsigned char);
+    bool collectItemGetCheck(unsigned char);
     void _create();
     void _create3();
     void _delete();
@@ -101,7 +101,7 @@ public:
     void _open2();
     void _close2();
 
-    /* 0x004 */ J2DScreen* m004;
+    /* 0x004 */ J2DScreen* screen;
     /* 0x008 */ fopMsgM_pane_class m008;
     /* 0x040 */ fopMsgM_pane_class m040;
     /* 0x078 */ fopMsgM_pane_class m078;
@@ -159,7 +159,8 @@ public:
     /* 0x23B0 */ fopMsgM_pane_class m23B0;
     /* 0x23E8 */ fopMsgM_pane_class m23E8;
     /* 0x2420 */ fopMsgM_pane_class m2420;
-    /* 0x2458 */ u8 m2458[0x2460 - 0x2458];
+    /* 0x2458 */ STControl* m2458;
+    /* 0x245C */ u8 m245C[0x2460 - 0x245C];
     /* 0x2460 */ dDlst_2DOutFont_c* m2460;
     /* 0x2464 */ u8 m2464[0x2470 - 0x2464];
     /* 0x2470 */ JUTFont* m2470;
