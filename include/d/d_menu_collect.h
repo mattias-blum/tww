@@ -171,7 +171,9 @@ public:
     /* 0x2498 */ ResTIMG* m2498;
     /* 0x249C */ ResTIMG* m249C;
     /* 0x24A0 */ ResTIMG* m24A0[6];
-    /* 0x24B8 */ u8 m24B8[0x2788 - 0x24B8];
+    /* 0x24B8 */ u8 m24B8[0x24E0 - 0x24B8];
+    /* 0x24E0 */ fopMsgM_msgDataProc_c m24E0;
+    /* 0x2510 */ u8 m2780[0x2788 - 0x2780];
     /* 0x2788 */ f32 m2788[4];
     /* 0x2798 */ f32 m2798[4];
     /* 0x27A8 */ f32 m27A8;

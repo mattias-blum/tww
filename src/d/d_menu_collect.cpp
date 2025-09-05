@@ -8,6 +8,7 @@
 #include "dolphin/types.h"
 #include "stdio.h"
 #include "d/d_com_inf_game.h"
+#include "m_Do/m_Do_controller_pad.h"
 
 static dMc_HIO_c g_mcHIO;
 
@@ -1163,17 +1164,127 @@ void dMenu_Collect_c::noteInit() {
 
 /* 8019E624-8019E898       .text noteAppear__15dMenu_Collect_cFv */
 void dMenu_Collect_c::noteAppear() {
-    /* Nonmatching */
+    /* Nonmatching - Switch statement logic */
+    float fVar1;
+    
+    if (m7E8.mUserArea == 1) {
+        switch (m7B0.mUserArea) {
+        case 0x12:
+            noteOpen();
+            break;
+        case 0x11:
+            noteClose();
+            break;
+        default:
+            m970.mNowAlpha = 0x82;
+            m970.mInitAlpha = 0x82;
+            
+            if (m27EB != 0) {
+                fVar1 = m0B0[m27E0].mPosCenter.x;
+                m27F0 = m24E0.selectCheckYoko((J2DPane*)(m0B0[m27E0]).pane, fVar1, m0B0[m27E0].mPosCenter.y, m0B0[m27E0].mPosTopLeft.x - fVar1);
+                if (m27F0 != m27F1) {
+                    mDoAud_seStart(0x83D);
+                    m27F1 = m27F0;
+                }
+            }
+
+            if (CPad_CHECK_TRIG_A(0) & 1) {
+                if (m27ED == 0x12) {
+                    if (m27F0 == 0) {
+                        dComIfGs_onCollect(4, 1);
+                        mDoAud_seStart(0x8B7);
+                    }
+                    else {
+                        dComIfGs_offCollect(4, 1);
+                        mDoAud_seStart(0x8B8);
+                    }
+                }
+                m7B0.mUserArea++;
+                mDoAud_seStart(0x816);
+            }
+            else {
+                if (CPad_CHECK_TRIG_B(0)) {
+                    m7B0.mUserArea++;
+                    if (m27ED == 0x12) {
+                        mDoAud_seStart(0x84B);
+                    }
+                    mDoAud_seStart(0x816);
+                }
+                
+            }
+        }
+    }
 }
 
 /* 8019E898-8019EA98       .text noteOpen__15dMenu_Collect_cFv */
 void dMenu_Collect_c::noteOpen() {
-    /* Nonmatching */
+    float fVar2 = 320.0f - m820.mPosCenterOrig.x;
+    float fVar3 = 240.0f - m820.mPosCenterOrig.y;
+    float fVar1 = 1.0f - fopMsgM_valueIncrease(0x11,0x11 - m7B0.mUserArea,0);
+    
+    if (m7B0.mUserArea >= 0x11) {
+        fopMsgM_setInitAlpha(&m970);
+        fopMsgM_setInitAlpha(&m740);
+        fopMsgM_setInitAlpha(&m778);
+        mDoAud_seStart(0x814);
+    }
+    else {
+        fopMsgM_setNowAlpha(&m970, fVar1);
+        fopMsgM_setNowAlpha(&m740, fVar1);
+        fopMsgM_setNowAlpha(&m778, fVar1);
+    }
+    
+    m820.pane->rotate(m820.mSize.x / 2.0f, m820.mSize.y / 2.0f, ROTATE_Z, m820.mUserArea + fVar1 * (float)(-3 - m820.mUserArea));
+
+    if (m7B0.mUserArea < 5) {
+        fVar1 = (m7B0.mUserArea * 0.8f) / 5.0f;
+    }
+    else {
+        fVar1 = (1.0f - fopMsgM_valueIncrease(0xc, 0x11 - m7B0.mUserArea, 0)) * 0.19999999f + 0.8f;
+    }
+
+    fopMsgM_paneTrans(&m820, fVar2 * fVar1, fVar3 * fVar1);
+    m7B0.mUserArea++;
 }
 
 /* 8019EA98-8019ECC8       .text noteClose__15dMenu_Collect_cFv */
 void dMenu_Collect_c::noteClose() {
     /* Nonmatching */
+    float fVar2 = (640.0f - m820.mPosCenterOrig.x) - 320.0f;
+    float fVar3 = (480.0f - m820.mPosCenterOrig.y) - 240.0f;
+    float fVar4 = 320.0f - m820.mPosCenterOrig.x;
+    float fVar5 = 240.0f - m820.mPosCenterOrig.y;
+    
+    float fVar1 = fopMsgM_valueIncrease(10, m7B0.mUserArea + -0x12, 0);
+
+    fopMsgM_paneTrans(&m820, (fVar2 * fVar1) + fVar4, (fVar3 * fVar1) + fVar5);
+
+    m820.pane->rotate(m820.mSize.x / 2.0f, m820.mSize.y / 2.0f, ROTATE_Z, (fVar1 * 123.0f) + -3.0f);
+
+    m7B0.mUserArea++;
+
+    if (m7B0.mUserArea > 0x1c) {
+        fopMsgM_setInitAlpha(&m7B0);
+        fopMsgM_setInitAlpha(&m7E8);
+        fopMsgM_setInitAlpha(&m820);
+        fopMsgM_setNowAlphaZero(&m970);
+        fopMsgM_setNowAlphaZero(&m740);
+        fopMsgM_setNowAlphaZero(&m778);
+
+        m7E8.mUserArea = 0;
+        m7B0.mUserArea = 0;
+
+        m820.pane->rotate(m820.mSize.x / 2.0f, m820.mSize.y / 2.0f, ROTATE_Z, m820.mUserArea);
+        noteInit();
+    }
+    else {
+        fopMsgM_setNowAlpha(&m7B0, 1.0f - fVar1);
+        fopMsgM_setNowAlpha(&m7E8, 1.0f - fVar1);
+        fopMsgM_setNowAlpha(&m820, 1.0f - fVar1);
+        fopMsgM_setNowAlpha(&m970, 1.0f - fVar1);
+        fopMsgM_setNowAlpha(&m740, 1.0f - fVar1);
+        fopMsgM_setNowAlpha(&m778, 1.0f - fVar1);
+    }
 }
 
 /* 8019ECC8-8019EFE0       .text mainTrans__15dMenu_Collect_cFff */
