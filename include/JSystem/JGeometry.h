@@ -85,7 +85,6 @@ template <>
 struct TVec3<f32> : public Vec {
     TVec3() {}
 
-    template<typename f32>
     TVec3(const f32 x, const f32 y, const f32 z) { set(x, y, z); }
 
     TVec3(const Vec& b) { set(b); }
@@ -279,9 +278,9 @@ struct TVec3<f32> : public Vec {
 template <typename T>
 struct TVec2 {
     TVec2() {}
-    TVec2(T x, T y) { set(x, y); }
+    TVec2(const T x, const T y) { set(x, y); }
 
-    void set(T x, T y) {
+    void set(const T x, const T y) {
         this->x = x;
         this->y = y;
     }
@@ -370,9 +369,12 @@ template<> struct TBox<TVec2<f32> > {
 };
 
 template <typename T>
-struct TBox2 : TBox<TVec2<T> > {
+struct TBox2 : public TBox<TVec2<T> > {
     TBox2() {}
-    TBox2(const TVec2<f32>& i, const TVec2<f32> f) { set(i, f); }
+    TBox2(const TVec2<f32>& _i, const TVec2<f32>& _f) { 
+        TBox<TVec2<T> >::i.set(_i);
+        TBox<TVec2<T> >::f.set(_f);
+    }
     TBox2(f32 x0, f32 y0, f32 x1, f32 y1) { set(x0, y0, x1, y1); }
 
     void absolute() {

@@ -937,7 +937,7 @@ bool Act_c::_execute() {
                 mCyl.MoveCAtTg(current.pos);
                 dComIfG_Ccsp()->Set(&mCyl);
                 if (m674 == 2 || m674 == 3 || m67B != 0) {
-                    dComIfG_Ccsp_SetMass(&mCyl, 3);
+                    dComIfG_Ccsp()->SetMass(&mCyl, 3);
                 }
                 attention_info.position.x = current.pos.x;
                 attention_info.position.y = current.pos.y + data().m08;
@@ -969,7 +969,7 @@ bool Act_c::_draw() {
         g_env_light.setLightTevColorType(mpModel, &tevStr);
         mDoExt_modelUpdateDL(mpModel);
         if (fopAcM_GetModel(this) == NULL) {
-            dComIfGd_setSimpleShadow2(&current.pos, mAcch.GetGroundH(), data().m80, mAcch.m_gnd);
+            dComIfGd_setSimpleShadow2(&current.pos, mAcch.GetGroundH(), data().shadowScaleXZ, mAcch.m_gnd);
         }
     }
     return true;

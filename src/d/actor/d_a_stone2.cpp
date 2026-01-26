@@ -489,7 +489,7 @@ void Act_c::set_senv(int arg1, int arg2) const {
 /* 00001B7C-00001BB4       .text cam_lockoff__Q28daStone25Act_cCFv */
 void Act_c::cam_lockoff() const {
     camera_class* camera = dComIfGp_getCamera(0);
-    camera->mCamera.ForceLockOff(base.mBsPcId);
+    camera->mCamera.ForceLockOff(base.base.mBsPcId);
 }
 
 /* 00001BB4-00001BE4       .text mode_wait_init__Q28daStone25Act_cFv */
@@ -726,7 +726,7 @@ BOOL Act_c::Execute(Mtx** outMtx) {
                 mCyl.MoveCAtTg(current.pos);
                 dComIfG_Ccsp()->Set(&mCyl);
                 if (m648 == 2) {
-                    dComIfG_Ccsp_SetMass(&mCyl, 3);
+                    dComIfG_Ccsp()->SetMass(&mCyl, 3);
                 }
             }
 

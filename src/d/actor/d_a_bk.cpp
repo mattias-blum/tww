@@ -2131,7 +2131,7 @@ static fopAc_ac_c* yari_hit_check(bk_class* i_this) {
         i_this->m1040.MoveCAt(i_this->m11A8);
         dComIfG_Ccsp()->Set(&i_this->m1040);
         if (i_this->m02D5 != 0) {
-            dComIfG_Ccsp_SetMass(&i_this->m1040, 3);
+            dComIfG_Ccsp()->SetMass(&i_this->m1040, 3);
         }
         if (i_this->m1040.ChkAtHit()) {
             i_this->m0B78 = 5;
@@ -2646,10 +2646,10 @@ static void fail(bk_class* i_this) {
         fopAcM_onActor(i_this);
         
         if (i_this->mType != 4) {
-            if (dComIfGs_isEventBit(0x0301)) {
-                dComIfGs_onEventBit(0x0480);
+            if (dComIfGs_isEventBit(dSv_event_flag_c::UNK_0301)) {
+                dComIfGs_onEventBit(dSv_event_flag_c::UNK_0480);
             } else {
-                dComIfGs_onEventBit(0x0301);
+                dComIfGs_onEventBit(dSv_event_flag_c::UNK_0301);
             }
         }
         break;
@@ -2899,7 +2899,7 @@ static void d_dozou(bk_class* i_this) {
     case 1:
         if (
             (i_this->m02B7 != 0xFF && dComIfGs_isSwitch(i_this->m02B7, fopAcM_GetRoomNo(i_this))) ||
-            (i_this->m02B7 == 0xFF && dComIfGs_isEventBit(0x3802))
+            (i_this->m02B7 == 0xFF && dComIfGs_isEventBit(dSv_event_flag_c::COLORS_IN_HYRULE))
         ) {
             i_this->mpMorf->setPlaySpeed(1.0f);
             i_this->dr.mMode = 2;
@@ -2933,7 +2933,7 @@ static void carry_drop(bk_class* i_this) {
     
     switch (i_this->dr.mMode) {
     case 0:
-        dComIfGs_onEventBit(0x0004);
+        dComIfGs_onEventBit(dSv_event_flag_c::UNK_0004);
         i_this->dr.mMode = 1;
         anm_init(i_this, BK_BCK_BK_KOUKA, 3.0f, J3DFrameCtrl::EMode_NONE, 1.0f, -1);
         // Fall-through
@@ -3329,7 +3329,7 @@ static void Bk_move(bk_class* i_this) {
             i_this->m1040.OffAtVsPlayerBit();
             i_this->m1040.SetAtSpl(dCcG_At_Spl_UNK1);
             dComIfG_Ccsp()->Set(&i_this->m1040);
-            dComIfG_Ccsp_SetMass(&i_this->m1040, 3);
+            dComIfG_Ccsp()->SetMass(&i_this->m1040, 3);
             
             if (i_this->m1040.ChkAtHit() && actor->speed.y < -50.0f) {
                 actor->speed.y = 0.0f;
@@ -4415,7 +4415,7 @@ static BOOL daBk_Execute(bk_class* i_this) {
     MtxPosition(&sp58, &sp4C);
     i_this->m0B88.SetC(sp4C);
     dComIfG_Ccsp()->Set(&i_this->m0B88);
-    dComIfG_Ccsp_SetMass(&i_this->m0B88, 3);
+    dComIfG_Ccsp()->SetMass(&i_this->m0B88, 3);
     
     cXyz sp40 = i_this->m116C;
     cXyz sp34 = i_this->current.pos;
