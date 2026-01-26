@@ -3,11 +3,11 @@
 // Translation Unit: d_a_tag_ghostship.cpp
 //
 
+#include "d/dolzel_rel.h" // IWYU pragma: keep
 #include "d/actor/d_a_tag_ghostship.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_procname.h"
-
-#include "weak_data_1811.h" // IWYU pragma: keep
+#include "d/d_priority.h"
 
 static daTag_Gship_HIO_c l_HIO;
 
@@ -51,7 +51,7 @@ void daTag_Gship_c::modeClearEvent() {
 
         if(dComIfGp_evmng_endCheck("PSHIP_CLEAR")) {
             mDoAud_seStart(JA_SE_LK_WARP_TO_G_SHIP);
-            s8 room = dComIfGs_getEventReg(0xC3FF);
+            u8 room = dComIfGs_getEventReg(0xC3FF);
             s8 spawn = dComIfGs_getEventReg(0x85FF);
             dKy_set_nexttime(120.0f);
             dComIfGp_setNextStage("sea", spawn, room, 0xFF, 0.0f, 5);
@@ -133,7 +133,7 @@ bool daTag_Gship_c::_delete() {
 }
 
 /* 000005F4-00000614 .text daTag_GshipCreate__FPv */
-static s32 daTag_GshipCreate(void* i_this) {
+static cPhs_State daTag_GshipCreate(void* i_this) {
     return static_cast<daTag_Gship_c*>(i_this)->_create();
 }
 
@@ -175,7 +175,7 @@ actor_process_profile_definition g_profile_TAG_GSHIP = {
     /* SizeOther    */ 0,
     /* Parameters   */ 0,
     /* Leaf SubMtd  */ &g_fopAc_Method.base,
-    /* Priority     */ 0x0066,
+    /* Priority     */ PRIO_TAG_GSHIP,
     /* Actor SubMtd */ &daTag_GshipMethodTable,
     /* Status       */ fopAcStts_UNK4000_e | fopAcStts_UNK40000_e,
     /* Group        */ fopAc_ACTOR_e,

@@ -3,7 +3,9 @@
 // Translation Unit: d_place_name.cpp
 //
 
+#include "d/dolzel.h" // IWYU pragma: keep
 #include "d/d_place_name.h"
+#include "d/d_priority.h"
 #include "f_op/f_op_msg.h"
 #include "f_op/f_op_msg_mng.h"
 #include "d/d_com_inf_game.h"
@@ -70,7 +72,7 @@ const char * name_texture[] = {
 /* 80160F60-801610A8       .text setScreen__13dPlace_name_cFPCcP10JKRArchive */
 void dPlace_name_c::setScreen(const char* name, JKRArchive* arc) {
     scrn = new J2DScreen();
-    JUT_ASSERT(VERSION_SELECT(69, 91, 91), scrn != NULL);
+    JUT_ASSERT(VERSION_SELECT(69, 69, 91, 91), scrn != NULL);
 
     scrn->set(name, arc);
     fopMsgM_setPaneData(&pane, scrn, 0x706e);
@@ -83,7 +85,8 @@ void dPlace_name_c::setScreen(const char* name, JKRArchive* arc) {
 BOOL dPlace_name_c::_openAnime() {
     if (pane.mUserArea < 10) {
         pane.mUserArea++;
-        f32 alpha = fopMsgM_valueIncrease(10, pane.mUserArea, 0);
+        s16 tmp = pane.mUserArea;
+        f32 alpha = fopMsgM_valueIncrease(10, tmp, 0);
         fopMsgM_setNowAlpha(&pane, alpha);
     }
 
@@ -96,7 +99,8 @@ BOOL dPlace_name_c::_closeAnime() {
 
     if (pane.mUserArea > 0) {
         pane.mUserArea--;
-        f32 alpha = fopMsgM_valueIncrease(10, pane.mUserArea, 0);
+        s16 tmp = pane.mUserArea;
+        f32 alpha = fopMsgM_valueIncrease(10, tmp, 0);
         fopMsgM_setNowAlpha(&pane, alpha);
     }
 
@@ -124,13 +128,13 @@ cPhs_State dPn_c::_create() {
     if (mState == 0) {
         if (rt == cPhs_COMPLEATE_e) {
             dRes_info_c * resInfo = dComIfG_getObjectResInfo("PName");
-            JUT_ASSERT(VERSION_SELECT(147, 169, 169), resInfo != NULL);
+            JUT_ASSERT(VERSION_SELECT(147, 147, 169, 169), resInfo != NULL);
 
             mpHeap = dComIfGp_getExpHeap2D();
             dComIfGp_setHeapLockFlag(10);
             JKRHeap * oldHeap = mDoExt_setCurrentHeap(mpHeap);
             dPn_scrn = new dPlace_name_c();
-            JUT_ASSERT(VERSION_SELECT(155, 177, 177), dPn_scrn != NULL);
+            JUT_ASSERT(VERSION_SELECT(155, 155, 177, 177), dPn_scrn != NULL);
             dPn_scrn->setScreen("place_name.blo", resInfo->getArchive());
             mpTIMG = (ResTIMG*)mpHeap->alloc(0x3c00, 0x20);
             mDoExt_setCurrentHeap(oldHeap);
@@ -148,7 +152,7 @@ cPhs_State dPn_c::_create() {
         }
     } else if (mState == 1) {
         JKRHeap * oldHeap = mDoExt_setCurrentHeap(mpHeap);
-        JUT_ASSERT(VERSION_SELECT(175, 201, 201), dComIfGp_getNowStageNum() < dPn_stage_max_e);
+        JUT_ASSERT(VERSION_SELECT(175, 175, 201, 201), dComIfGp_getNowStageNum() < dPn_stage_max_e);
 
 #if VERSION == VERSION_PAL
         u32 lang = dComIfGs_getPalLanguage();
@@ -166,7 +170,7 @@ cPhs_State dPn_c::_create() {
         JKRHeap * oldHeap = mDoExt_setCurrentHeap(mpHeap);
         if (dvd->sync()) {
             memcpy(mpTIMG, dvd->getMemAddress(), 0x3c00);
-#if VERSION == VERSION_JPN
+#if VERSION <= VERSION_JPN
             DCFlushRangeNoSync(mpTIMG, 0x3c00);
 #else
             DCStoreRangeNoSync(mpTIMG, 0x3c00);
@@ -213,7 +217,7 @@ BOOL dPn_c::_delete() {
     mpHeap->freeAll();
     dComIfGp_offHeapLockFlag();
     mDoExt_setCurrentHeap(oldHeap);
-    dComIfG_resDelete(&mPhs, "PName");
+    dComIfG_resDeleteDemo(&mPhs, "PName");
     return TRUE;
 }
 
@@ -261,6 +265,6 @@ msg_process_profile_definition g_profile_PLACE_NAME = {
     0,
     0,
     &g_fopMsg_Method,
-    0x1DD,
+    PRIO_PLACE_NAME,
     &l_dPlace_name_Method,
 };

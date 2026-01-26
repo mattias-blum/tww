@@ -3,8 +3,10 @@
 // Translation Unit: d_ovlp_fade2.cpp
 //
 
+#include "d/dolzel.h" // IWYU pragma: keep
 #include "d/d_ovlp_fade2.h"
 #include "d/d_com_inf_game.h"
+#include "d/d_priority.h"
 #include "d/d_procname.h"
 #include "d/d_s_play.h"
 #include "f_ap/f_ap_game.h"
@@ -40,7 +42,7 @@ void dOvlpFd2_dlst_c::draw() {
     GXSetCullMode(GX_CULL_NONE);
     GXSetDither(GX_TRUE);
     GXSetClipMode(GX_CLIP_DISABLE);
-    GXLoadPosMtxImm(mDoMtx_getIdentity(), GX_PNMTX0);
+    GXLoadPosMtxImm(cMtx_getIdentity(), GX_PNMTX0);
     GXSetCurrentMtx(GX_PNMTX0);
 
     GXBegin(GX_QUADS, GX_VTXFMT0, 4);
@@ -51,7 +53,7 @@ void dOvlpFd2_dlst_c::draw() {
     GXEnd();
 
     Mtx44 proj;
-    C_MTXPerspective(proj, 60.0f, fapGmHIO_getAspectRatio() * 1.33333333f, 100.0f, 100000.0f);
+    C_MTXPerspective(proj, 60.0f, fapGmHIO_getAspectRatio() * (4.0f/3.0f), 100.0f, 100000.0f);
     GXSetProjection(proj, GX_PERSPECTIVE);
 
     GXInitTexObj(mDoGph_gInf_c::getFrameBufferTexObj(), mDoGph_gInf_c::getFrameBufferTex(), 320, 240, GX_TF_RGBA8, GX_CLAMP, GX_CLAMP, GX_FALSE);
@@ -253,11 +255,11 @@ overlap_process_profile_definition g_profile_OVERLAP2 = {
     0,
     0,
     &g_fopOvlp_Method,
-    0x1E3,
+    PRIO_OVERLAP2,
     &l_dOvlpFd2_Method,
 };
 
-#if VERSION != VERSION_JPN
+#if VERSION > VERSION_JPN
 overlap_process_profile_definition g_profile_OVERLAP3 = {
     fpcLy_ROOT_e,
     2,
@@ -268,10 +270,7 @@ overlap_process_profile_definition g_profile_OVERLAP3 = {
     0,
     0,
     &g_fopOvlp_Method,
-    0x1E4,
+    PRIO_OVERLAP3,
     &l_dOvlpFd2_Method,
 };
 #endif
-
-// Fakematch to fix the weak func order of cLib_calcTimer<signed char>(signed char*)
-#pragma sym off

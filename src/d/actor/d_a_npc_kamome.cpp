@@ -3,10 +3,12 @@
  * Player - Hyoi Seagull
  */
 
+#include "d/dolzel_rel.h" // IWYU pragma: keep
 #include "d/actor/d_a_npc_kamome.h"
 #include "d/res/res_kamome.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_procname.h"
+#include "d/d_priority.h"
 #include "m_Do/m_Do_hostIO.h"
 #include "d/d_item_data.h"
 #include "d/actor/d_a_player_main.h"
@@ -16,8 +18,55 @@
 #include "d/d_snap.h"
 #include "d/d_camera.h"
 
-#include "weak_bss_936_to_1036.h" // IWYU pragma: keep
-#include "weak_data_1811.h" // IWYU pragma: keep
+class daNpc_kam_HIO1_c {
+public:
+    daNpc_kam_HIO1_c();
+    virtual ~daNpc_kam_HIO1_c() {}
+    
+    void genMessage(JORMContext* ctx) {}
+    
+public:
+    /* 0x04 */ f32 mSpeedF;
+    /* 0x08 */ f32 mUnused08;
+    /* 0x0C */ f32 mFlappingSpeedF;
+    /* 0x10 */ f32 mAccelF;
+    /* 0x14 */ s16 mGlidingAngVelY;
+    /* 0x16 */ s16 mGlidingAngVelX;
+    /* 0x18 */ s16 mMaxAngleZ;
+    /* 0x1A */ s16 mFlappingAngVelY;
+    /* 0x1C */ s16 mFlappingAngVelX;
+    /* 0x1E */ s16 mAngVelStepScale;
+    /* 0x20 */ s16 mAngVelMaxStep;
+    /* 0x22 */ s16 mAngVelMinStep;
+    /* 0x24 */ s16 mFlapDuration;
+    /* 0x26 */ s16 mFlapExhaustedDuration;
+    /* 0x28 */ s16 mFlapEnergyDuration;
+};  // Size: 0x2C
+
+class daNpc_kam_HIO_c : public JORReflexible {
+public:
+    struct hio_prm_c {
+        // Note: Offsets are relative to daNpc_kam_HIO_c instead of hio_prm_c for convenience.
+        /* 0x08 */ f32 m08;
+        /* 0x0C */ f32 m0C;
+        /* 0x10 */ f32 m10;
+        /* 0x14 */ f32 m14;
+        /* 0x18 */ f32 m18;
+        /* 0x1C */ s16 m1C;
+        /* 0x1E */ u8 m1E;
+    };  // Size: 0x18
+    
+    daNpc_kam_HIO_c();
+    virtual ~daNpc_kam_HIO_c() {}
+    
+    void genMessage(JORMContext* ctx) {}
+
+public:
+    /* 0x04 */ s8 mNo;
+    /* 0x08 */ hio_prm_c prm;
+    /* 0x20 */ daNpc_kam_c* mpActor;
+    /* 0x24 */ daNpc_kam_HIO1_c mHio1;
+};  // Size: 0x50
 
 static char* l_staff_name = "HyoiKam";
 static daNpc_kam_HIO_c l_HIO;
@@ -303,10 +352,10 @@ static dCcD_SrcSph l_sph_src = {
         /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGSphS
-    {
-        /* Center */ 0.0f, 0.0f, 0.0f,
+    {{
+        /* Center */ {0.0f, 0.0f, 0.0f},
         /* Radius */ 30.0f,
-    },
+    }},
 };
 
 static dCcD_SrcSph l_tg_sph_src = {
@@ -332,10 +381,10 @@ static dCcD_SrcSph l_tg_sph_src = {
         /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGSphS
-    {
-        /* Center */ 0.0f, 0.0f, 0.0f,
+    {{
+        /* Center */ {0.0f, 0.0f, 0.0f},
         /* Radius */ 30.0f,
-    },
+    }},
 };
 
 static dCcD_SrcCps l_kam_at_cps_src = {
@@ -361,11 +410,11 @@ static dCcD_SrcCps l_kam_at_cps_src = {
         /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCpsS
-    {
-        /* Start  */ 0.0f, 0.0f, 0.0f,
-        /* End    */ 0.0f, 0.0f, 0.0f,
+    {{
+        /* Start  */ {0.0f, 0.0f, 0.0f},
+        /* End    */ {0.0f, 0.0f, 0.0f},
         /* Radius */ 20.0f,
-    },
+    }},
 };
 
 static char* event_name_tbl[] = {
@@ -394,7 +443,7 @@ BOOL daNpc_kam_c::init() {
     
     mAcchCirs[0].SetWall(20.0f, 50.0f);
     mAcchCirs[1].SetWall(-20.0f, 50.0f);
-    mAcch.Set(&current.pos, &old.pos, this, ARRAY_SIZE(mAcchCirs), mAcchCirs, &speed);
+    mAcch.Set(fopAcM_GetPosition_p(this), fopAcM_GetOldPosition_p(this),  this, ARRAY_SIZE(mAcchCirs), mAcchCirs, fopAcM_GetSpeed_p(this));
     mAcch.ClrRoofNone();
     mAcch.SetRoofCrrHeight(20.0f);
     mAcch.OnLineCheck();
@@ -449,7 +498,7 @@ void daNpc_kam_c::npcAction(void* arg) {
         speedF = 0.0f;
         offHyoiKamome();
         setNpcAction(&daNpc_kam_c::waitNpcAction, NULL);
-#if VERSION != VERSION_JPN
+#if VERSION > VERSION_JPN
         mDoAud_zelAudio_c::getInterface()->field_0x0062 = 0;
 #endif
     }
@@ -887,7 +936,7 @@ BOOL daNpc_kam_c::checkCommandTalk() {
 void daNpc_kam_c::returnLinkPlayer() {
     changePlayer(dComIfGp_getLinkPlayer());
     offHyoiKamome();
-#if VERSION != VERSION_JPN
+#if VERSION > VERSION_JPN
     mDoAud_zelAudio_c::getInterface()->field_0x0062 = 0;
 #endif
 }
@@ -1016,7 +1065,7 @@ void daNpc_kam_c::initialDescendEvent(int evtStaffId) {
     mTargetAngVelX = l_HIO.mHio1.mGlidingAngVelX;
     
     mDoAud_seStart(JA_SE_HYOI_USE_DEMO, NULL, 0, dComIfGp_getReverb(fopAcM_GetRoomNo(this)));
-#if VERSION != VERSION_JPN
+#if VERSION > VERSION_JPN
     mDoAud_zelAudio_c::getInterface()->field_0x0062 = 1;
 #endif
     
@@ -1045,7 +1094,7 @@ BOOL daNpc_kam_c::actionDescendEvent(int evtStaffId) {
     }
     
     cXyz delta = linkHeadTopPos - current.pos;
-    if (delta.abs2XZ() < 100.0f*100.0f) {
+    if (delta.abs2XZ() < SQUARE(100.0f)) {
         return TRUE;
     }
     
@@ -1285,7 +1334,7 @@ BOOL daNpc_kam_c::execute() {
         
         if (!isNoBgCheck()) {
             mAcch.CrrPos(*dComIfG_Bgsp());
-            if (mAcch.GetGroundH() != C_BG_MIN_HEIGHT) {
+            if (mAcch.GetGroundH() != -G_CM3D_F_INF) {
                 s8 roomNo = dComIfG_Bgsp()->GetRoomId(mAcch.m_gnd);
                 fopAcM_SetRoomNo(this, roomNo);
                 tevStr.mRoomNo = roomNo;
@@ -1426,7 +1475,7 @@ actor_process_profile_definition g_profile_NPC_KAM = {
     /* SizeOther    */ 0,
     /* Parameters   */ 0,
     /* Leaf SubMtd  */ &g_fopAc_Method.base,
-    /* Priority     */ 0x00B6,
+    /* Priority     */ PRIO_NPC_KAM,
     /* Actor SubMtd */ &l_daNpc_kam_Method,
     /* Status       */ fopAcStts_CULL_e | fopAcStts_UNK4000_e | fopAcStts_UNK40000_e,
     /* Group        */ fopAc_ACTOR_e,

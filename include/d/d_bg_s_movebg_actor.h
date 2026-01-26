@@ -3,6 +3,7 @@
 
 #include "SSystem/SComponent/c_bg_s_poly_info.h"
 #include "f_op/f_op_actor.h"
+#include "d/d_a_obj.h"
 
 class dBgW;
 typedef void (*MoveBGActor_SetFunc)(dBgW*, void*, cBgS_PolyInfo&, bool, cXyz*, csXyz*, csXyz*);

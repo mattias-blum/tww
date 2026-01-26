@@ -10,6 +10,7 @@
  * based on the original names of the functions it contains.
  */
 
+#include "d/dolzel.h" // IWYU pragma: keep
 #include "d/actor/d_a_player_main.h"
 #include "d/actor/d_a_player_HIO.h"
 #include "f_op/f_op_kankyo_mng.h"
@@ -22,7 +23,7 @@ void daPy_lk_c::setSpeedAndAngleSwim() {
     BOOL bVar3 = false;
 
     if (mCurProc != daPyProc_SWIM_UP_e) {
-        if (!mpAttention->Lockon()) {
+        if (!checkAttentionLock()) {
             if (mStickDistance > 0.05f) {
                 oldAngleY = shape_angle.y;
 
@@ -113,7 +114,7 @@ BOOL daPy_lk_c::changeSwimProc() {
     BOOL res;
     cXyz local_18;
     
-    if (checkNoResetFlg0(daPyFlg0_UNK80) && !checkModeFlg(ModeFlg_IN_SHIP | ModeFlg_SWIM) && !checkNoControll() && mDemo.getDemoMode() != daPy_demo_c::DEMO_UNK11_e && m35D0 - current.pos.y > daPy_HIO_swim_c0::m.field_0x24) {
+    if (checkNoResetFlg0(daPyFlg0_UNK80) && !checkModeFlg(ModeFlg_IN_SHIP | ModeFlg_SWIM) && !checkNoControll() && mDemo.getDemoMode() != daPy_demo_c::DEMO_PFALL_e && m35D0 - current.pos.y > daPy_HIO_swim_c0::m.field_0x24) {
         dComIfGp_setItemTimeCount(900);
         dComIfGp_setItemTimeMax(900);
 
@@ -214,7 +215,7 @@ BOOL daPy_lk_c::checkSwimFallCheck() {
 BOOL daPy_lk_c::changeSwimOutProc() {
     cM3dGPla* pcVar1;
     
-    if (mAcch.GetGroundH() != C_BG_MIN_HEIGHT && dComIfG_Bgsp()->ChkPolySafe(mAcch.m_gnd)) {
+    if (mAcch.GetGroundH() != -G_CM3D_F_INF && dComIfG_Bgsp()->ChkPolySafe(mAcch.m_gnd)) {
         pcVar1 = dComIfG_Bgsp()->GetTriPla(mAcch.m_gnd);   
     }
     else {
@@ -231,7 +232,7 @@ BOOL daPy_lk_c::changeSwimOutProc() {
         return procFall_init(1, daPy_HIO_wallCatch_c0::m.field_0x54);
     }
 
-    if (!checkNoResetFlg0(daPyFlg0_UNK80) || (pcVar1 && pcVar1->mNormal.y >= 0.5f && m35D0 - mAcch.GetGroundH() < daPy_HIO_swim_c0::m.field_0x24 - 5.0f)) {
+    if (!checkNoResetFlg0(daPyFlg0_UNK80) || (pcVar1 && cBgW_CheckBGround(pcVar1->GetNP()->y) && m35D0 - mAcch.GetGroundH() < daPy_HIO_swim_c0::m.field_0x24 - 5.0f)) {
         current.pos.y = m35D0;
 
         if (mCurProc == daPyProc_SWIM_MOVE_e && mDirection != DIR_FORWARD) {
@@ -510,7 +511,7 @@ BOOL daPy_lk_c::procSwimMove() {
     J3DFrameCtrl* mFrameCtrl = mFrameCtrlUnder;
 
     int direction;
-    if (!mpAttention->Lockon()) {
+    if (!checkAttentionLock()) {
         direction = DIR_FORWARD;
     }
     else if (mStickDistance > 0.05f) {

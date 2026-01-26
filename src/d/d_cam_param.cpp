@@ -3,6 +3,7 @@
 // Translation Unit: d_cam_param.cpp
 //
 
+#include "d/dolzel.h" // IWYU pragma: keep
 #include "d/d_cam_param.h"
 #include "d/d_kankyo_wether.h"
 #include "m_Do/m_Do_mtx.h"
@@ -104,7 +105,7 @@ BOOL dCamParam_c::Change(s32 i_styleIdx) {
         mpStyle = &styles[mStyleIdx];
         return TRUE;
     } else {
-        mpStyle = &styles[0];
+        mpStyle = &styles[dCamStyle_NN00_e];
         return FALSE;
     }
 }

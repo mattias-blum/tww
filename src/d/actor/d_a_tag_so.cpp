@@ -3,9 +3,11 @@
 // Translation Unit: d_a_tag_so.cpp
 //
 
+#include "d/dolzel_rel.h" // IWYU pragma: keep
 #include "d/actor/d_a_tag_so.h"
 #include "d/d_lib.h"
 #include "d/d_procname.h"
+#include "d/d_priority.h"
 
 /* 000000EC-0000010C       .text __ct__14daTag_So_HIO_cFv */
 daTag_So_HIO_c::daTag_So_HIO_c() {
@@ -65,7 +67,7 @@ bool daTag_So_c::_delete() {
 }
 
 /* 00000284-000002A4       .text daTag_SoCreate__FPv */
-static s32 daTag_SoCreate(void* i_this) {
+static cPhs_State daTag_SoCreate(void* i_this) {
     return ((daTag_So_c*)i_this)->_create();
 }
 
@@ -107,7 +109,7 @@ actor_process_profile_definition g_profile_TAG_SO = {
     /* SizeOther    */ 0,
     /* Parameters   */ 0,
     /* Leaf SubMtd  */ &g_fopAc_Method.base,
-    /* Priority     */ 0x0065,
+    /* Priority     */ PRIO_TAG_SO,
     /* Actor SubMtd */ &daTag_SoMethodTable,
     /* Status       */ fopAcStts_UNK40000_e,
     /* Group        */ fopAc_ACTOR_e,

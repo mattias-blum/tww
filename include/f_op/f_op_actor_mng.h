@@ -40,7 +40,7 @@ struct fopAcM_prm_class {
     /* 0x1C */ fpc_ProcID parent_id;
     /* 0x20 */ s8 subtype;
     /* 0x21 */ s8 room_no;
-};
+}; // size = 0x24
 
 struct fopAcM_search4ev_prm {
     fopAcM_search4ev_prm() { clear(); }
@@ -86,7 +86,7 @@ enum daItemAction_e {
 };
 
 enum daDisappearItemType_e {
-    daDisItem_NORMAL_e = 0,
+    daDisItem_IBALL_e = 0,
     daDisItem_NONE1_e = 1,
     daDisItem_HEART_CONTAINER_e = 2,
     daDisItem_NONE3_e = 3,
@@ -94,7 +94,7 @@ enum daDisappearItemType_e {
     daDisItem_HEART_e = 10,
     daDisItem_MAGIC_e = 11,
     daDisItem_ARROW_e = 12,
-    daDisItem_UNK13_e = 13,
+    daDisItem_NONE13_e = 13,
 };
 
 class l_HIO {
@@ -132,7 +132,11 @@ inline u32 fopAcM_checkCarryNow(fopAc_ac_c* pActor) {
     return pActor->actor_status & fopAcStts_CARRY_e;
 }
 
-inline u32 fopAcM_checkHookCarryNow(fopAc_ac_c* pActor) {
+inline void fopAcM_ClearStatusMap(fopAc_ac_c* pActor) {
+    pActor->actor_status &= ~0x3F;
+}
+
+inline bool fopAcM_checkHookCarryNow(fopAc_ac_c* pActor) {
     return fopAcM_CheckStatus(pActor, fopAcStts_HOOK_CARRY_e);
 }
 
@@ -195,10 +199,6 @@ inline fopAc_ac_c* fopAcM_Search(fopAcIt_JudgeFunc func, void* param) {
 
 inline cXyz* fopAcM_GetPosition_p(fopAc_ac_c* pActor) {
     return &pActor->current.pos;
-}
-
-inline cXyz& fopAcM_GetPosition(fopAc_ac_c* pActor) {
-    return pActor->current.pos;
 }
 
 inline cXyz* fopAcM_GetOldPosition_p(fopAc_ac_c* pActor) {
@@ -387,7 +387,7 @@ inline fopAc_ac_c* fopAcM_SearchByName(s16 procName) {
     return (fopAc_ac_c*)fopAcIt_Judge(fpcSch_JudgeForPName, &procName);
 }
 
-inline fpc_ProcID fopAcM_GetLinkId(const fopAc_ac_c* pActor) {
+inline fpc_ProcID fopAcM_GetLinkId(fopAc_ac_c* pActor) {
     return pActor->parentActorID;
 }
 
@@ -401,21 +401,31 @@ inline BOOL fopAcM_isItem(fopAc_ac_c* item, int bitNo) {
     return dComIfGs_isItem(bitNo, fopAcM_GetHomeRoomNo(item));
 }
 
+inline BOOL dComIfGs_isVisitedRoom(int i_no);
 inline BOOL dComIfGs_isSaveSwitch(int i_stageNo, int i_no);
 inline BOOL fopAcM_isItemForIb(int itemBitNo, u8 itemNo, s8 roomNo) {
     if (itemNo == dItem_BLUE_JELLY_e) {
+#if VERSION == VERSION_DEMO
+        return dComIfGs_isVisitedRoom(itemBitNo);
+#else
         // Blue Chu Jelly uses itemBitNo as if it was a switch in stageNo 0xE.
         return dComIfGs_isSaveSwitch(dSv_save_c::STAGE_BLUE_CHU_JELLY, itemBitNo);
+#endif
     } else {
         return dComIfGs_isItem(itemBitNo, roomNo);
     }
 }
 
+inline void dComIfGs_onVisitedRoom(int i_no);
 inline void dComIfGs_onSaveSwitch(int i_stageNo, int i_no);
 inline void fopAcM_onItemForIb(int itemBitNo, u8 itemNo, s8 roomNo) {
     if (itemNo == dItem_BLUE_JELLY_e) {
+#if VERSION == VERSION_DEMO
+        dComIfGs_onVisitedRoom(itemBitNo);
+#else
         // Blue Chu Jelly uses itemBitNo as if it was a switch in stageNo 0xE.
         dComIfGs_onSaveSwitch(dSv_save_c::STAGE_BLUE_CHU_JELLY, itemBitNo);
+#endif
     } else {
         dComIfGs_onItem(itemBitNo, roomNo);
     }
@@ -425,15 +435,14 @@ inline f32 fopAcM_searchActorDistanceY(fopAc_ac_c* actorA, fopAc_ac_c* actorB) {
     return actorB->current.pos.y - actorA->current.pos.y;
 }
 
-inline u16 fopAcM_GetSetId(fopAc_ac_c* p_actor) {
+inline int fopAcM_GetSetId(fopAc_ac_c* p_actor) {
     return p_actor->setID;
 }
 
 inline void dComIfGs_onActor(int bitNo, int roomNo);
 
 inline void fopAcM_onActor(fopAc_ac_c* p_actor) {
-    int setId = fopAcM_GetSetId(p_actor);
-    dComIfGs_onActor(setId, fopAcM_GetHomeRoomNo(p_actor));
+    dComIfGs_onActor(fopAcM_GetSetId(p_actor), fopAcM_GetHomeRoomNo(p_actor));
 }
 
 inline bool fopAcM_IsFirstCreating(void* i_actor) {
@@ -502,23 +511,11 @@ void fopAcM_DeleteHeap(fopAc_ac_c* p_actor);
 bool fopAcM_entrySolidHeap(fopAc_ac_c* p_actor, heapCallbackFunc p_heapCallback, u32 estimatedHeapSize);
 
 inline void fopAcM_SetMin(fopAc_ac_c* p_actor, f32 minX, f32 minY, f32 minZ) {
-#ifdef __MWERKS__
     p_actor->cull.box.min.set(minX, minY, minZ);
-#else
-    p_actor->cull.box.min.x = minX;
-    p_actor->cull.box.min.y = minY;
-    p_actor->cull.box.min.z = minZ;
-#endif
 }
 
 inline void fopAcM_SetMax(fopAc_ac_c* p_actor, f32 maxX, f32 maxY, f32 maxZ) {
-#ifdef __MWERKS__
     p_actor->cull.box.max.set(maxX, maxY, maxZ);
-#else
-    p_actor->cull.box.max.x = maxX;
-    p_actor->cull.box.max.y = maxY;
-    p_actor->cull.box.max.z = maxZ;
-#endif
 }
 
 void fopAcM_setCullSizeBox(fopAc_ac_c* p_actor, f32 minX, f32 minY, f32 minZ, f32 maxX, f32 maxY,
@@ -552,6 +549,9 @@ s32 fopAcM_rollPlayerCrash(fopAc_ac_c* i_this, f32 distAdjust, u32 flag);
 s32 fopAcM_checkCullingBox(Mtx, f32, f32, f32, f32, f32, f32);
 s32 fopAcM_cullingCheck(fopAc_ac_c*);
 s32 fopAcM_orderTalkEvent(fopAc_ac_c*, fopAc_ac_c*);
+s32 fopAcM_orderTalkXBtnEvent(fopAc_ac_c* i_this, fopAc_ac_c* i_partner);
+s32 fopAcM_orderTalkYBtnEvent(fopAc_ac_c* i_this, fopAc_ac_c* i_partner);
+s32 fopAcM_orderTalkZBtnEvent(fopAc_ac_c* i_this, fopAc_ac_c* i_partner);
 s32 fopAcM_orderZHintEvent(fopAc_ac_c*, fopAc_ac_c*);
 s32 fopAcM_orderSpeakEvent(fopAc_ac_c* i_actor);
 s32 fopAcM_orderDoorEvent(fopAc_ac_c*, fopAc_ac_c*);
@@ -590,6 +590,8 @@ fpc_ProcID fopAcM_createRaceItem(cXyz* p_pos, int i_itemNo, int i_itemBitNo, csX
 
 fpc_ProcID fopAcM_createIball(cXyz* p_pos, int itemTableIdx, int roomNo, csXyz* p_angle, int itemStealNum);
 
+void fopAcM_createWarpFlower(cXyz* p_pos, csXyz* p_angle, int i_roomNo, u8 param_4);
+
 fpc_ProcID fopAcM_createDemoItem(cXyz* p_pos, int itemNo, int itemBitNo, csXyz* p_angle,
                            int roomNo, cXyz* scale, u8 argFlag);
 
@@ -611,11 +613,9 @@ void* fopAcM_fastCreateItem(cXyz* p_pos, int i_itemNo, int i_roomNo, csXyz* p_an
 
 void* fopAcM_createStealItem(cXyz* p_pos, int i_tblNo, int i_roomNo, csXyz* p_angle, int i_itemBitNo);
 
-BOOL stealItem_CB(void* actor);
-
 fopAc_ac_c* fopAcM_myRoomSearchEnemy(s8 roomNo);
 
-fpc_ProcID fopAcM_createDisappear(fopAc_ac_c* i_actor, cXyz* p_pos, u8 i_scale, u8 i_health = 0, u8 i_itemBitNo = -1);
+fpc_ProcID fopAcM_createDisappear(fopAc_ac_c* i_actor, cXyz* p_pos, u8 i_scale, u8 i_dropType, u8 i_itemBitNo = -1);
 void fopAcM_setCarryNow(fopAc_ac_c* i_this, BOOL stageLayer);
 void fopAcM_cancelCarryNow(fopAc_ac_c* i_this);
 s32 fopAcM_otoCheck(fopAc_ac_c*, f32);
@@ -645,6 +645,14 @@ inline s16 fopAcM_searchPlayerAngleY(fopAc_ac_c* actor) {
 
 inline s32 fopAcM_seenPlayerAngleY(fopAc_ac_c* actor) {
     return fopAcM_seenActorAngleY(actor, (fopAc_ac_c*)dComIfGp_getPlayer(0));
+}
+
+inline s32 fopAcM_toActorShapeAngleY(fopAc_ac_c* actor1, fopAc_ac_c* actor2) {
+    return actor1->shape_angle.y - actor2->shape_angle.y;
+}
+
+inline s32 fopAcM_toPlayerShapeAngleY(fopAc_ac_c* actor) {
+    return fopAcM_toActorShapeAngleY(actor, (fopAc_ac_c*)dComIfGp_getPlayer(0));
 }
 
 inline f32 fopAcM_searchPlayerDistanceY(fopAc_ac_c* actor) {
@@ -699,5 +707,8 @@ inline void fopAcM_offDraw(fopAc_ac_c* actor) {
 inline void fopAcM_orderOtherEvent(fopAc_ac_c* ac, char* event, u16 hind = -1) {
     fopAcM_orderOtherEvent2(ac, event, dEvtFlag_NOPARTNER_e, hind);
 }
+
+s32 fopAcM_createHeap(fopAc_ac_c* i_this, u32 size, u32 align);
+void fopAcM_adjustHeap(fopAc_ac_c* i_this);
 
 #endif

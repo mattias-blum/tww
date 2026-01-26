@@ -3,6 +3,7 @@
 // Translation Unit: d_wood.cpp
 //
 
+#include "d/dolzel.h" // IWYU pragma: keep
 #include "d/d_wood.h"
 #include "JAZelAudio/JAIZelBasic.h"
 #include "JSystem/JUtility/JUTAssert.h"
@@ -14,17 +15,13 @@
 #include "d/d_procname.h"
 #include "d/d_tree.h"
 #include "d/d_cc_d.h"
-#include "dolphin/gf/GFGeometry.h"
-#include "dolphin/gf/GFTev.h"
-#include "dolphin/gf/GFTransform.h"
+#include "dolphin/gf/GF.h"
 #include "dolphin/gx/GXAttr.h"
 #include "dolphin/gx/GXDisplayList.h"
 #include "dolphin/gx/GXStruct.h"
 #include "dolphin/types.h"
 #include "m_Do/m_Do_lib.h"
 #include "m_Do/m_Do_mtx.h"
-
-#include "weak_data_1811.h" // IWYU pragma: keep
 
 //-----------------------------------------
 // Types
@@ -603,7 +600,7 @@ bool dWood::Unit_c::set_ground() {
     gndChk.SetPos(&pos);
     f32 gndHeight = dComIfG_Bgsp()->GroundCross(&gndChk);
 
-    if (gndHeight > C_BG_MIN_HEIGHT) {
+    if (gndHeight > -G_CM3D_F_INF) {
         mPos.y = gndHeight;
         cM3dGPla *triPla = dComIfG_Bgsp()->GetTriPla(gndChk);
 
@@ -1048,7 +1045,7 @@ void dWood::Packet_c::draw() {
         }
     }
 
-#if VERSION != VERSION_JPN
+#if VERSION > VERSION_JPN
     J3DShape::resetVcdVatCache();
 #endif
 }
@@ -1074,7 +1071,7 @@ s32 dWood::Packet_c::search_empty_UnitID() const {
 dWood::AnmID_e dWood::Packet_c::search_anm(dWood::Anm_c::Mode_e i_mode) {
     u32 animIdx;
 
-    JUT_ASSERT(VERSION_SELECT(2059, 2061, 2061), (i_mode >= 0) && (i_mode < Anm_c::Mode_Max));
+    JUT_ASSERT(VERSION_SELECT(2059, 2059, 2061, 2061), (i_mode >= 0) && (i_mode < Anm_c::Mode_Max));
 
     if (i_mode == Anm_c::Mode_Norm) {
         static s32 anm_norm_num = 0;
