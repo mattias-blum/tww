@@ -539,7 +539,7 @@ static u32 daNpcNz_getShopBoughtMsg(u8 itemNo) {
     }
 
     int itemTemp = itemNo; // probably fake
-    if(checkItemGet(itemTemp, 0)) {
+    if(checkItemGet(itemTemp, FALSE)) {
         dComIfGp_setItemRupeeCount(-messageRupee);
         execItemGet(itemTemp);
         return 0x3403;
@@ -726,7 +726,7 @@ u16 daNpc_Nz_c::next_msgStatus(u32* pMsgNo) {
 }
 
 /* 00002038-000022C0       .text anmAtr__10daNpc_Nz_cFUs */
-void daNpc_Nz_c::anmAtr(u16) {
+void daNpc_Nz_c::anmAtr(u16 i_msgStatus) {
     if(field_0x6D5 == 9 && mpMorf->checkFrame(mpMorf->getEndFrame() - 1.0f)) {
         setAnm(0, false);
     }
@@ -907,7 +907,7 @@ BOOL daNpc_Nz_c::createInit() {
 /* 00002768-0000282C       .text setSmokeParticle__10daNpc_Nz_cFv */
 void daNpc_Nz_c::setSmokeParticle() {
     if(field_0x914.getEmitter() != NULL) {
-        field_0x914.end();
+        field_0x914.remove();
     }
 
     if(field_0x914.getEmitter() == NULL) {
@@ -966,7 +966,7 @@ daNpc_Nz_c::daNpc_Nz_c() {
 /* 00002E00-00002E6C       .text _delete__10daNpc_Nz_cFv */
 bool daNpc_Nz_c::_delete() {
     if(field_0x914.getEmitter()) {
-        field_0x914.end();
+        field_0x914.remove();
     }
 
     dComIfG_resDelete(&mPhs1, m_arc_name);

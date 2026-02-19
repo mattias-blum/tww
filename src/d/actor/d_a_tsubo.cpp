@@ -1938,7 +1938,7 @@ void Act_c::mode_carry_init() {
         se_pickup_carry_init();
     }
 
-    cLib_offBit<u32>(base.mParameters, 0x80000000);
+    prm_off_stick();
     m685 = 0;
     m686 = 0;
     m678 = 4;
@@ -2760,8 +2760,11 @@ void Act_c::bound(float arg1) {
                 }
             }
         }
-    } else if (mAcch.ChkWallHit() != false) {
-        speedF *= 0.9f;
+    } else {
+        bool tmp = mAcch.ChkWallHit();
+        if (tmp) {
+            speedF *= 0.9f;
+        }
     }
 }
 
@@ -3511,7 +3514,7 @@ void Act_c::set_senv(int arg1, int arg2) const {
 
 /* 00007840-00007878       .text cam_lockoff__Q27daTsubo5Act_cCFv */
 void Act_c::cam_lockoff() const {
-    dComIfGp_getCamera(0)->mCamera.ForceLockOff(base.mBsPcId);
+    dComIfGp_getCamera(0)->mCamera.ForceLockOff(base.base.mBsPcId);
 }
 
 /* 00007878-00007B08       .text _execute__Q27daTsubo5Act_cFv */
@@ -3551,7 +3554,7 @@ bool Act_c::_execute() {
                         }
 
                         if (m678 == 5 || m678 == 6 || m678 == 3 || m683 != 0) {
-                            dComIfG_Ccsp_SetMass(&mCyl, 3);
+                            dComIfG_Ccsp()->SetMass(&mCyl, 3);
                         }
 
                         attention_info.position.x = current.pos.x;

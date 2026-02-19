@@ -462,16 +462,14 @@ void daTbox_c::CreateInit() {
     mOpenAnm.setPlaySpeed(0.0f);
 
     if (checkOpen()) {
-        J3DFrameCtrl* frameCtrl = mOpenAnm.getFrameCtrl();
-        frameCtrl->setFrame(frameCtrl->getEnd());
+        mOpenAnm.setFrame(mOpenAnm.getEndFrame());
 
         setAction(&daTbox_c::actionWait);
 
         if (checkEnv()) {
             mInvisibleScrollVal = 2.0f;
 
-            frameCtrl = mpAppearRegAnm->getFrameCtrl();
-            frameCtrl->setFrame(frameCtrl->getEnd());
+            mpAppearRegAnm->setFrame(mpAppearRegAnm->getEndFrame());
         }
     }
     else {
@@ -490,8 +488,7 @@ void daTbox_c::CreateInit() {
 
                 mInvisibleScrollVal = 2.0f;
 
-                J3DFrameCtrl* frameCtrl = mpAppearRegAnm->getFrameCtrl();
-                frameCtrl->setFrame(frameCtrl->getEnd());
+                mpAppearRegAnm->setFrame(mpAppearRegAnm->getEndFrame());
             }
             else {
                 flagOn(daTboxFlg_UNK_04);
@@ -744,7 +741,7 @@ void daTbox_c::demoProcAppear() {
     }
 
     if (mAppearTimer == 0x04 && mSmokeCB.getEmitter() != NULL) {
-        mSmokeCB.end();
+        mSmokeCB.remove();
     }
 
     if (mAppearTimer != 0x00) {
@@ -922,27 +919,14 @@ BOOL daTbox_c::actionWait() {
 
 /* 000024B4-000025A4       .text actionDemo__8daTbox_cFv */
 BOOL daTbox_c::actionDemo() {
-    /* Fakematch - the temp variable for play is definitely not right. */
-    s16 eventId = eventInfo.getEventId();
-    dComIfG_play_c* play = &g_dComIfG_gameInfo.play;
-    if (dComIfGp_evmng_endCheck(eventId)) {
-    // if (dComIfGp_evmng_endCheck(eventInfo.getEventId())) {
+    if (dComIfGp_evmng_endCheck(eventInfo.getEventId())) {
         setAction(&daTbox_c::actionWait);
 
-        // Fakematch:
-        // When dComIfGp_event_reset is used here, the way gameInfo is loaded matches the demo
-        // binary, but not the release binary. So the demo's debug map may be misleading here?
-        // But daTbox_c::actionDemo in TP debug still calls dComIfGp_event_reset, so maybe not?
-        // Also, putting a cast like (void) on dComIfGp_event_reset() slightly improves the
-        // codegen, but it's still slightly wrong.
-        // dComIfGp_event_reset();
-        play->getEvent().reset();
+        dComIfGp_event_reset();
 
         dKy_set_allcol_ratio(1.0f);
         flagOff(daTboxFlg_UNK_08 | daTboxFlg_OPENING_e);
 
-        // The fakematch also might be related to dComIfGp_event_setItemPartner? Removing this
-        // call fixes the load above.
         dComIfGp_event_setItemPartner(NULL);
 
         if (mSmokeEmitter != NULL) {

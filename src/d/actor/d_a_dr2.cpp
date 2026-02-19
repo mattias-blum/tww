@@ -125,7 +125,7 @@ void iwa_draw(dr2_class* i_this) {
         mDoExt_modelUpdateDL(i_this->unk_418);
         if (i_this->unk_424 != 0) {
             J3DModelData* modelData = i_this->unk_41C->getModelData();
-            i_this->unk_420->entry(modelData, i_this->unk_420->getFrame());
+            i_this->unk_420->entry(modelData);
             g_env_light.setLightTevColorType(i_this->unk_41C, &i_this->actor.tevStr);
             mDoExt_modelUpdateDL(i_this->unk_41C);
         }
@@ -160,14 +160,14 @@ void yuka_draw(dr2_class* i_this) {
     if (!i_this->unk_43C) {
         g_env_light.setLightTevColorType(i_this->unk_428, &i_this->actor.tevStr);
         modelData = i_this->unk_428->getModelData();
-        i_this->unk_430->entry(modelData, i_this->unk_430->getFrame());
+        i_this->unk_430->entry(modelData);
         mDoExt_modelUpdateDL(i_this->unk_428);
     } else {
         g_env_light.setLightTevColorType(i_this->unk_42C, &i_this->actor.tevStr);
         modelData = i_this->unk_42C->getModelData();
-        i_this->unk_434->entry(modelData, i_this->unk_434->getFrame());
+        i_this->unk_434->entry(modelData);
         modelData = i_this->unk_42C->getModelData();
-        i_this->unk_438->entry(modelData, i_this->unk_438->getFrame());
+        i_this->unk_438->entry(modelData);
         mDoExt_modelUpdateDL(i_this->unk_42C);
     }
 }
@@ -186,6 +186,7 @@ static BOOL daDr2_Draw(dr2_class* i_this) {
 
 /* 000006D4-00000720       .text s_a_d_sub__FPvPv */
 void* s_a_d_sub(void* ac1, void* ac2) {
+    UNUSED(ac2);
     if (fopAcM_IsActor(ac1) && fopAcM_GetName(ac1) == PROC_BTD) {
         return ac1;
     }
@@ -223,6 +224,7 @@ void hahen_move(dr2_class* i_this) {
 
 /* 00000884-0000130C       .text iwa_move__FP9dr2_class */
 void iwa_move(dr2_class* i_this) {
+    /* Nonmatching - retail-only regalloc */
     fopAc_ac_c* a_this = &i_this->actor;
     cXyz sp58;
     cXyz sp4C;
@@ -309,7 +311,7 @@ void iwa_move(dr2_class* i_this) {
             cLib_addCalc2(&i_this->unk_414, 2000.0f, 0.5f, 100.0f);
 
             i_this->unk_4A8.y = btd->m02FC[3].y + REG0_F(3);
-            i_this->unk_4B4.y = i_this->unk_514->current.angle.y;
+            i_this->unk_4B4.y = i_this->unk_514->actor.current.angle.y;
             
             if (btd->m02FC[3].y < REG0_F(6) + 100.0f) {
                 i_this->unk_4C0 = (REG0_F(6) + 100.0f) - btd->m02FC[3].y;
@@ -429,9 +431,7 @@ void iwa_move(dr2_class* i_this) {
             while (link != list->getEnd()) {
                 JGeometry::TVec3<f32> tvec;
                 link->getObject()->getGlobalPosition(tvec);
-                sp40.x = tvec.x;
-                sp40.y = tvec.y;
-                sp40.z = tvec.z;
+                sp40 = tvec;
                 dComIfGp_particle_setSimple(dPa_name::ID_SCENE_8062, &sp40, 0xB9);
                 link = link->getNext();
             }
@@ -653,7 +653,7 @@ static BOOL useHeapInit(fopAc_ac_c* a_this) {
 
     i_this->mpMorf1 = new mDoExt_McaMorf((J3DModelData*)dComIfG_getObjectRes("Dr2", DR2_BMD_DR_SIPPO), NULL, NULL, NULL, J3DFrameCtrl::EMode_LOOP, 1.0f, 0, -1, 0, NULL, 0, 0x11020203);
     
-    if ((i_this->mpMorf1 == NULL) || (i_this->mpMorf1->mpModel == NULL)) {
+    if ((i_this->mpMorf1 == NULL) || (i_this->mpMorf1->getModel() == NULL)) {
         return FALSE;
     }
 
@@ -705,7 +705,7 @@ static BOOL useHeapInit(fopAc_ac_c* a_this) {
                             NULL, NULL, (J3DAnmTransformKey*)dComIfG_getObjectRes("Dr2", DR2_BCK_DR_BOSS_DEMO1), 
                             J3DFrameCtrl::EMode_LOOP, 1.0f, 0, -1, 0, NULL, 0, 0x11020203);
 
-    if (i_this->mpMorf2 == NULL || i_this->mpMorf2->mpModel == NULL) {
+    if (i_this->mpMorf2 == NULL || i_this->mpMorf2->getModel() == NULL) {
         return FALSE;
     }
 

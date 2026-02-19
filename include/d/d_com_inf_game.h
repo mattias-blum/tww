@@ -28,8 +28,6 @@ class dGrass_packet_c;
 class dTree_packet_c;
 class dFlower_packet_c;
 namespace dWood { class Packet_c; };
-class daPy_py_c;
-class daPy_lk_c;
 class daShip_c;
 class daAgb_c;
 class camera_class;
@@ -237,7 +235,7 @@ public:
 
     dStage_roomControl_c* getRoomControl() { return &mRoomCtrl; }
     dStage_dt_c& getStage() { return mStageData; }
-    dEvt_control_c& getEvent() { return mEvtCtrl; }
+    dEvt_control_c* getEvent() { return &mEvtCtrl; }
     dEvent_manager_c& getEvtManager() { return mEvtManager; }
     dPa_control_c* getParticle() { return mParticle; }
     dVibration_c& getVibration() { return mVibration; }
@@ -287,7 +285,7 @@ public:
 
     fopAc_ac_c* getPlayer(int idx) { return mPlayerInfo[idx].mpPlayer; }
     void setPlayer(int idx, fopAc_ac_c* player) { mPlayerInfo[idx].mpPlayer = player; }
-    s8 getPlayerCameraID(int idx) { return mPlayerInfo[idx].mCameraID; }
+    int getPlayerCameraID(int idx) { return mPlayerInfo[idx].mCameraID; }
     void setPlayerInfo(int idx, fopAc_ac_c* player, int cam) {
         mPlayerInfo[idx].mpPlayer = player;
         mPlayerInfo[idx].mCameraID = cam;
@@ -374,6 +372,7 @@ public:
     s16 getItemMaxMagicCount() { return mItemMaxMagicCount; }
     void setItemMaxMagicCount(s16 magic) { mItemMaxMagicCount += magic; }
 
+    s16 getItemBombNumCount() { return mItemBombNumCount; }
     void setItemBombNumCount(s16 num) { mItemBombNumCount += num; }
 
     u16 getItemNowLife() { return mItemNowLife; }
@@ -423,7 +422,9 @@ public:
     void setOperateWindOn() { mOperateWind = 2; }
 
     u8 checkMesgSendButton() { return mMesgSendButton; }
+    void setMesgSendButton(u8 button) { mMesgSendButton = button; }
     u8 checkMesgCancelButton() { return mMesgCancelButton; }
+    void setMesgCancelButton(u8 button) { mMesgCancelButton = button; }
 
     void setPlayerStatus(int param_0, int i, u32 flag) { mPlayerStatus[param_0][i] |= flag; }
     void clearPlayerStatus(int param_0, int i, u32 flag) { mPlayerStatus[param_0][i] &= ~flag; }
@@ -485,6 +486,10 @@ public:
     inline void setHeapLockFlag(u8 flag) { mHeapLockFlag = flag; }
     inline void offHeapLockFlag() { mHeapLockFlag = 0; }
 
+    bool getMetronome() { return mMetronome; }
+    void setMetronomeOn() { mMetronome = true; }
+    void setMetronomeOff() { mMetronome = false; }
+
 #if VERSION > VERSION_DEMO
     // These inlines aren't present in WW demo debug maps, but are present in TP debug.
     inline u8 getNowVibration() { return mNowVibration; }
@@ -528,10 +533,12 @@ public:
     JKRArchive* getItemIconArchive() { return mpItemIconArchive; }
     void setNameResArchive(JKRArchive * pArc) { mpNameResArchive = pArc; }
     void setErrorResArchive(JKRArchive * pArc) { mpErrorResArchive = pArc; }
+    JKRArchive* getErrorResArchive() { return mpErrorResArchive; }
     void setActionIconArchive(JKRArchive * pArc) { mpActionIconArchive = pArc; }
     JKRArchive* getActionIconArchive() { return mpActionIconArchive; }
     void setScopeResArchive(JKRArchive * pArc) { mpScopeResArchive = pArc; }
     void setCameraResArchive(JKRArchive * pArc) { mpCameraResArchive = pArc; }
+    JKRArchive* getSwimResArchive() { return mpSwimResArchive; }
     void setSwimResArchive(JKRArchive * pArc) { mpSwimResArchive = pArc; }
     void setWindResArchive(JKRArchive * pArc) { mpWindResArchive = pArc; }
     void setFontArchive(JKRArchive * pArc) { mpFont0Archive = pArc; }
@@ -577,6 +584,7 @@ public:
         mMinigameFlags ^= 1 << (i_gameType - 1); // toggle Nth bit
         mMinigameResult = 0;
     }
+    u8 getMiniGameResult() { return mMinigameResult; }
     void setMiniGameResult(u8 i_result) {
         mMinigameResult = i_result;
     }
@@ -737,7 +745,7 @@ public:
     /* 0x4944 */ u8 field_0x4944;
     /* 0x4945 */ u8 mScopeType;
     /* 0x4946 */ u8 mOperateWind;
-    /* 0x4947 */ u8 field_0x4947;
+    /* 0x4947 */ bool mMetronome;
     /* 0x4948 */ u8 mMesgSendButton;
     /* 0x4949 */ u8 mMesgCancelButton;
     /* 0x494A */ u8 field_0x494a[6];
@@ -833,8 +841,9 @@ extern GXColor g_saftyWhiteColor;
  * === SAVE ===
  */
 
-void dComIfGs_gameStart();
 void dComIfGs_setGameStartStage();
+void dComIfGs_gameStart();
+void dComIfGs_copyPlayerRecollectionData();
 u8 dComIfGs_checkGetItem(u8);
 
 inline void dComIfGs_init() {
@@ -1570,6 +1579,10 @@ inline void dComIfGs_onDungeonItemBossKey() {
     g_dComIfG_gameInfo.save.getMemory().getBit().onDungeonItemBossKey();
 }
 
+inline void dComIfGs_onStageBossEnemy() {
+    g_dComIfG_gameInfo.save.getMemory().getBit().onStageBossEnemy();
+}
+
 BOOL dComIfGs_isStageBossEnemy(int i_stageNo);
 
 inline BOOL dComIfGs_isStageBossEnemy() {
@@ -1591,6 +1604,10 @@ inline BOOL dComIfGs_isStageLife() {
 }
 
 void dComIfGs_onStageLife(int i_stageNo);
+
+inline void dComIfGs_onStageBossDemo() {
+    g_dComIfG_gameInfo.save.getMemory().getBit().onStageBossDemo();
+}
 
 inline BOOL dComIfGs_isStageBossDemo() {
     return g_dComIfG_gameInfo.save.getMemory().getBit().isStageBossDemo();
@@ -1882,6 +1899,10 @@ inline void dComIfGs_setMaxMagic(u8 magic) {
 
 inline u8 dComIfGs_getKeyNum() {
     return g_dComIfG_gameInfo.save.getMemory().getBit().getKeyNum();
+}
+
+inline void dComIfGs_setKeyNum(u8 i_keyNum) {
+    g_dComIfG_gameInfo.save.getMemory().getBit().setKeyNum(i_keyNum);
 }
 
 inline dSv_player_status_a_c* dComIfGs_getpPlayerStatusA() {
@@ -2316,20 +2337,12 @@ inline daAgb_c* dComIfGp_getAgb() {
     return g_dComIfG_gameInfo.play.getAgb();
 }
 
-inline daPy_py_c* daPy_getPlayerActorClass() {
-    return (daPy_py_c*)dComIfGp_getPlayer(0);
-}
-
 inline fopAc_ac_c* dComIfGp_getLinkPlayer() {
     return g_dComIfG_gameInfo.play.getPlayerPtr(0);
 }
 
 inline void dComIfGp_setLinkPlayer(fopAc_ac_c* player) {
     g_dComIfG_gameInfo.play.setPlayerPtr(0, player);
-}
-
-inline daPy_lk_c* daPy_getPlayerLinkActorClass() {
-    return (daPy_lk_c*)dComIfGp_getLinkPlayer();
 }
 
 inline void dComIfGp_setWindowNum(int num) {
@@ -2468,7 +2481,7 @@ inline void dComIfGp_clearItemTimeCount() {
     g_dComIfG_gameInfo.play.clearItemTimeCount();
 }
 
-inline u32 dComIfGp_getItemTimeMax() {
+inline s32 dComIfGp_getItemTimeMax() {
     return g_dComIfG_gameInfo.play.getItemTimeMax();
 }
 
@@ -2516,6 +2529,10 @@ inline void dComIfGp_setItemMaxMagicCount(s16 magic) {
     g_dComIfG_gameInfo.play.setItemMaxMagicCount(magic);
 }
 
+inline s16 dComIfGp_getItemBombNumCount() {
+    return g_dComIfG_gameInfo.play.getItemBombNumCount();
+}
+
 inline void dComIfGp_setItemBombNumCount(s16 num) {
     g_dComIfG_gameInfo.play.setItemBombNumCount(num);
 }
@@ -2560,8 +2577,16 @@ inline void dComIfGp_setOperateWindOn() {
     g_dComIfG_gameInfo.play.setOperateWindOn();
 }
 
+inline void dComIfGp_setMesgSendButton(u8 button) {
+    g_dComIfG_gameInfo.play.setMesgSendButton(button);
+}
+
 inline u8 dComIfGp_checkMesgSendButton() {
     return g_dComIfG_gameInfo.play.checkMesgSendButton();
+}
+
+inline void dComIfGp_setMesgCancelButton(u8 button) {
+    g_dComIfG_gameInfo.play.setMesgCancelButton(button);
 }
 
 inline u8 dComIfGp_checkMesgCancelButton() {
@@ -2659,8 +2684,12 @@ inline void dComIfGp_endMiniGame(u16 i_gameType) {
     g_dComIfG_gameInfo.play.endMiniGame(i_gameType);
 }
 
-inline u8 dComIfGp_setMiniGameResult(u8 result) {
+inline void dComIfGp_setMiniGameResult(u8 result) {
     g_dComIfG_gameInfo.play.setMiniGameResult(result);
+}
+
+inline u8 dComIfGp_getMiniGameResult() {
+    return g_dComIfG_gameInfo.play.getMiniGameResult();
 }
 
 enum dActionStatus_e {
@@ -2771,8 +2800,8 @@ inline void dComIfGp_setRStatusForce(u8 status) {
 }
 
 // B Button
-inline void dComIfGp_getAStatusForce(u8 status) {
-    g_dComIfG_gameInfo.play.setAStatus(status);
+inline u8 dComIfGp_getAStatusForce() {
+    return g_dComIfG_gameInfo.play.getAStatusForce();
 }
 
 // B Button
@@ -3095,7 +3124,14 @@ inline BOOL dComIfGp_roomControl_checkRoomDisp(int i_roomNo) {
  */
 
 inline BOOL dComIfGp_event_runCheck() {
-    return g_dComIfG_gameInfo.play.getEvent().runCheck();
+    return g_dComIfG_gameInfo.play.getEvent()->runCheck();
+}
+
+inline u16 dComIfGp_event_checkHind(u16 i_hindFlag) {
+    if (!dComIfGp_event_runCheck()) {
+        return false;
+    }
+    return g_dComIfG_gameInfo.play.getEvent()->checkHind(i_hindFlag);
 }
 
 /**
@@ -3103,112 +3139,124 @@ inline BOOL dComIfGp_event_runCheck() {
  * @return The dTalkXYButton_e of the button the player used to initiate this event.
  */
 inline u8 dComIfGp_event_getTalkXYBtn() {
-    return g_dComIfG_gameInfo.play.getEvent().getTalkXYBtn();
+    return g_dComIfG_gameInfo.play.getEvent()->getTalkXYBtn();
 }
 
 inline bool dComIfGp_event_chkTalkXY() {
-    return g_dComIfG_gameInfo.play.getEvent().chkTalkXY();
+    return g_dComIfG_gameInfo.play.getEvent()->chkTalkXY();
 }
 
 inline void dComIfGp_event_onEventFlag(u16 flag) {
-    g_dComIfG_gameInfo.play.getEvent().onEventFlag(flag);
+    g_dComIfG_gameInfo.play.getEvent()->onEventFlag(flag);
 }
 
 inline void dComIfGp_event_offEventFlag(u16 flag) {
-    g_dComIfG_gameInfo.play.getEvent().offEventFlag(flag);
+    g_dComIfG_gameInfo.play.getEvent()->offEventFlag(flag);
 }
 
 inline u16 dComIfGp_event_chkEventFlag(u16 flag) {
-    return g_dComIfG_gameInfo.play.getEvent().chkEventFlag(flag);
+    return g_dComIfG_gameInfo.play.getEvent()->chkEventFlag(flag);
 }
 
 inline void dComIfGp_event_remove() {
-    g_dComIfG_gameInfo.play.getEvent().remove();
+    g_dComIfG_gameInfo.play.getEvent()->remove();
 }
 
 inline void dComIfGp_event_reset() {
-    g_dComIfG_gameInfo.play.getEvent().reset();
+    g_dComIfG_gameInfo.play.getEvent()->reset();
 }
 
 inline int dComIfGp_event_getPreItemNo() {
-    return g_dComIfG_gameInfo.play.getEvent().getPreItemNo();
+    return g_dComIfG_gameInfo.play.getEvent()->getPreItemNo();
 }
 
 inline void dComIfGp_event_setGtItm(u8 itemNo) {
-    g_dComIfG_gameInfo.play.getEvent().setGtItm(itemNo);
+    g_dComIfG_gameInfo.play.getEvent()->setGtItm(itemNo);
 }
 
 inline u8 dComIfGp_event_getGtItm() {
-    return g_dComIfG_gameInfo.play.getEvent().getGtItm();
+    return g_dComIfG_gameInfo.play.getEvent()->getGtItm();
 }
 
 inline s32 dComIfGp_event_moveApproval(void* actor) {
-    return g_dComIfG_gameInfo.play.getEvent().moveApproval(actor);
+    return g_dComIfG_gameInfo.play.getEvent()->moveApproval(actor);
 }
 
 inline BOOL dComIfGp_event_compulsory(void* param_1, const char* param_2 = NULL, u16 param_3 = -1) {
-    return g_dComIfG_gameInfo.play.getEvent().compulsory(param_1, param_2, param_3);
+    return g_dComIfG_gameInfo.play.getEvent()->compulsory(param_1, param_2, param_3);
 }
 
 inline s32 dComIfGp_event_order(u16 eventType, u16 priority, u16 flag, u16 hind, void* pActor1,
                                 void* pActor2, s16 eventID = -1, u8 infoIdx = -1) {
-    return g_dComIfG_gameInfo.play.getEvent().order(eventType, priority, flag, hind, pActor1, pActor2, eventID, infoIdx);
+    return g_dComIfG_gameInfo.play.getEvent()->order(eventType, priority, flag, hind, pActor1, pActor2, eventID, infoIdx);
 }
 
 inline s32 dComIfGp_event_orderOld(u16 eventType, u16 priority, u16 flag, u16 hind, void* pActor1, void* pActor2, const char *pEventName) {
-    return g_dComIfG_gameInfo.play.getEvent().orderOld(eventType, priority, flag, hind, pActor1, pActor2, pEventName);
+    return g_dComIfG_gameInfo.play.getEvent()->orderOld(eventType, priority, flag, hind, pActor1, pActor2, pEventName);
 }
 
 inline fopAc_ac_c* dComIfGp_event_getTalkPartner() {
-    return g_dComIfG_gameInfo.play.getEvent().getPtT();
+    return g_dComIfG_gameInfo.play.getEvent()->getPtT();
 }
 
 inline void dComIfGp_event_setTalkPartner(void* i_actor) {
-    g_dComIfG_gameInfo.play.getEvent().setPtT(i_actor);
+    g_dComIfG_gameInfo.play.getEvent()->setPtT(i_actor);
 }
 
 inline fopAc_ac_c* dComIfGp_event_getItemPartner() {
-    return g_dComIfG_gameInfo.play.getEvent().getPtI();
+    return g_dComIfG_gameInfo.play.getEvent()->getPtI();
 }
 
 inline void dComIfGp_event_setItemPartner(void* pt) {
-    g_dComIfG_gameInfo.play.getEvent().setPtI(pt);
+    g_dComIfG_gameInfo.play.getEvent()->setPtI(pt);
 }
 
 inline void dComIfGp_event_setItemPartnerId(fpc_ProcID id) {
-    g_dComIfG_gameInfo.play.getEvent().setPtI_Id(id);
+    g_dComIfG_gameInfo.play.getEvent()->setPtI_Id(id);
 }
 
 inline fopAc_ac_c* dComIfGp_event_getPt1() {
-    return g_dComIfG_gameInfo.play.getEvent().getPt1();
+    return g_dComIfG_gameInfo.play.getEvent()->getPt1();
 }
 
 inline fopAc_ac_c* dComIfGp_event_getPt2() {
-    return g_dComIfG_gameInfo.play.getEvent().getPt2();
+    return g_dComIfG_gameInfo.play.getEvent()->getPt2();
 }
 
 inline f32 dComIfGp_event_getCullRate() {
-    return g_dComIfG_gameInfo.play.getEvent().getCullRate();
+    return g_dComIfG_gameInfo.play.getEvent()->getCullRate();
 }
 
 inline void dComIfGp_event_setCullRate(f32 ratio) {
-    g_dComIfG_gameInfo.play.getEvent().setCullRate(ratio);
+    g_dComIfG_gameInfo.play.getEvent()->setCullRate(ratio);
 }
 
 inline BOOL dComIfGp_event_check() {
-    return g_dComIfG_gameInfo.play.getEvent().check();
+    return g_dComIfG_gameInfo.play.getEvent()->check();
 }
 
 inline u8 dComIfGp_event_getMode() {
-    return g_dComIfG_gameInfo.play.getEvent().getMode();
+    return g_dComIfG_gameInfo.play.getEvent()->getMode();
 }
 
 inline u8 dComIfGp_event_getTactFreeMStick(int which) {
-    return g_dComIfG_gameInfo.play.getEvent().getTactFreeMStick(which);
+    return g_dComIfG_gameInfo.play.getEvent()->getTactFreeMStick(which);
 }
 
 inline u8 dComIfGp_event_getTactFreeCStick(int which) {
-    return g_dComIfG_gameInfo.play.getEvent().getTactFreeCStick(which);
+    return g_dComIfG_gameInfo.play.getEvent()->getTactFreeCStick(which);
+}
+
+inline bool dComIfGp_getMetronome() {
+    return g_dComIfG_gameInfo.play.getMetronome();
+}
+
+inline void dComIfGp_setMetronomeOn() {
+    g_dComIfG_gameInfo.play.setMetronomeOn();
+}
+
+inline void dComIfGp_setMetronomeOff() {
+    g_dComIfG_gameInfo.play.setMetronomeOff();
 }
 
 /**
@@ -3397,31 +3445,31 @@ stage_arrow_class* dComIfGp_getRoomArrow(int i_roomNo);
  * === DRAWLIST ===
  */
 
-int dComIfGd_setShadow(u32 id, s8 param_2, J3DModel* pModel, cXyz* pPos, f32 param_5, f32 param_6,
-                       f32 y, f32 param_8, cBgS_PolyInfo& pFloorPoly, dKy_tevstr_c* param_10,
-                       s16 rotY = 0, f32 param_12 = 1.0f,
+int dComIfGd_setShadow(u32 id, s8 shouldFade, J3DModel* pModel, cXyz* pPos, f32 casterSize, f32 scaleXZ,
+                       f32 y, f32 groundY, cBgS_PolyInfo& pFloorPoly, dKy_tevstr_c* pTevStr,
+                       s16 rotY = 0, f32 scaleZ = 1.0f,
                        GXTexObj* pTexObj = dDlst_shadowControl_c::getSimpleTex());
 
-inline int dComIfGd_setSimpleShadow(cXyz* i_pos, f32 groundY, f32 param_2, cXyz* floor_nrm,
-                                    s16 i_angle = 0, f32 param_5 = 1.0f,
+inline int dComIfGd_setSimpleShadow(cXyz* i_pos, f32 groundY, f32 scaleXZ, cXyz* floor_nrm,
+                                    s16 i_angle = 0, f32 scaleZ = 1.0f,
                                     GXTexObj* i_tex = dDlst_shadowControl_c::getSimpleTex()) {
-    return g_dComIfG_gameInfo.drawlist.setSimpleShadow(i_pos, groundY, param_2, floor_nrm, i_angle,
-                                                       param_5, i_tex);
+    return g_dComIfG_gameInfo.drawlist.setSimpleShadow(i_pos, groundY, scaleXZ, floor_nrm, i_angle,
+                                                       scaleZ, i_tex);
 }
 
-int dComIfGd_setSimpleShadow2(cXyz* i_pos, f32 param_1, f32 param_2, cBgS_PolyInfo& i_floorPoly,
-                              s16 i_angle = 0, f32 param_5 = 1.0f,
+int dComIfGd_setSimpleShadow2(cXyz* i_pos, f32 groundY, f32 scaleXZ, cBgS_PolyInfo& i_floorPoly,
+                              s16 i_angle = 0, f32 scaleZ = 1.0f,
                               GXTexObj* i_tex = dDlst_shadowControl_c::getSimpleTex());
 
-inline int dComIfGd_setRealShadow(u32 id, s8 param_2, J3DModel* pModel, cXyz* pPos, f32 param_5,
-                                   f32 param_6, dKy_tevstr_c* pTevStr) {
-    return g_dComIfG_gameInfo.drawlist.setRealShadow(id, param_2, pModel, pPos, param_5, param_6,
+inline int dComIfGd_setRealShadow(u32 id, s8 shouldFade, J3DModel* pModel, cXyz* pPos, f32 casterSize,
+                                   f32 heightAboveGround, dKy_tevstr_c* pTevStr) {
+    return g_dComIfG_gameInfo.drawlist.setRealShadow(id, shouldFade, pModel, pPos, casterSize, heightAboveGround,
                                                      pTevStr);
 }
 
-inline int dComIfGd_setRealShadow2(u32 id, s8 param_2, J3DModel* pModel, cXyz* pPos, f32 param_5,
-                                   f32 param_6, dKy_tevstr_c* pTevStr) {
-    return g_dComIfG_gameInfo.drawlist.setRealShadow2(id, param_2, pModel, pPos, param_5, param_6,
+inline int dComIfGd_setRealShadow2(u32 id, s8 shouldFade, J3DModel* pModel, cXyz* pPos, f32 casterSize,
+                                   f32 heightAboveGround, dKy_tevstr_c* pTevStr) {
+    return g_dComIfG_gameInfo.drawlist.setRealShadow2(id, shouldFade, pModel, pPos, casterSize, heightAboveGround,
                                                       pTevStr);
 }
 
@@ -3525,6 +3573,7 @@ inline void dComIfGd_entryZSortXluListMaskOff(J3DPacket* i_packet, cXyz& param_1
     g_dComIfG_gameInfo.drawlist.entryZSortXluListMaskOff(i_packet, param_1);
 }
 
+inline void dComIfGd_set2DOpaTop(dDlst_base_c* pBase) { g_dComIfG_gameInfo.drawlist.set2DOpaTop(pBase); }
 inline void dComIfGd_set2DOpa(dDlst_base_c* pBase) { g_dComIfG_gameInfo.drawlist.set2DOpa(pBase); }
 inline void dComIfGd_set2DXlu(dDlst_base_c* pBase) { g_dComIfG_gameInfo.drawlist.set2DXlu(pBase); }
 
@@ -3599,10 +3648,12 @@ inline void dComIfGp_setItemIconArchive(JKRArchive * pArc) { g_dComIfG_gameInfo.
 inline JKRArchive* dComIfGp_getItemIconArchive() { return g_dComIfG_gameInfo.play.getItemIconArchive(); }
 inline void dComIfGp_setNameResArchive(JKRArchive * pArc) { g_dComIfG_gameInfo.play.setNameResArchive(pArc); }
 inline void dComIfGp_setErrorResArchive(JKRArchive * pArc) { g_dComIfG_gameInfo.play.setErrorResArchive(pArc); }
+inline JKRArchive* dComIfGp_getErrorResArchive() { return g_dComIfG_gameInfo.play.getErrorResArchive(); }
 inline void dComIfGp_setActionIconArchive(JKRArchive * pArc) { g_dComIfG_gameInfo.play.setActionIconArchive(pArc); }
 inline JKRArchive* dComIfGp_getActionIconArchive() { return g_dComIfG_gameInfo.play.getActionIconArchive(); }
 inline void dComIfGp_setScopeResArchive(JKRArchive * pArc) { g_dComIfG_gameInfo.play.setScopeResArchive(pArc); }
 inline void dComIfGp_setCameraResArchive(JKRArchive * pArc) { g_dComIfG_gameInfo.play.setCameraResArchive(pArc); }
+inline JKRArchive* dComIfGp_getSwimResArchive() { return g_dComIfG_gameInfo.play.getSwimResArchive(); }
 inline void dComIfGp_setSwimResArchive(JKRArchive * pArc) { g_dComIfG_gameInfo.play.setSwimResArchive(pArc); }
 inline void dComIfGp_setWindResArchive(JKRArchive * pArc) { g_dComIfG_gameInfo.play.setWindResArchive(pArc); }
 inline void dComIfGp_setFontArchive(JKRArchive * pArc) { g_dComIfG_gameInfo.play.setFontArchive(pArc); }
@@ -4010,14 +4061,6 @@ inline void dComIfGp_map_clrAGBMapSendStopFlg() {
 inline dCcS* dComIfG_Ccsp() {
     return &g_dComIfG_gameInfo.play.mCcS;
 }
-
-// This should be dComIfG_Ccsp()->SetMass everywhere, but for some reason that combination of two
-// inlines consistently breaks the match on retail. But for the demo, using the proper inlines is required to match.
-#if VERSION == VERSION_DEMO
-#define dComIfG_Ccsp_SetMass dComIfG_Ccsp()->SetMass
-#else
-#define dComIfG_Ccsp_SetMass dComIfG_Ccsp()->mMass_Mng.Set
-#endif
 
 inline void dComIfG_setTimerMode(int ms) { g_dComIfG_gameInfo.play.setTimerMode(ms); }
 inline int dComIfG_getTimerMode() { return g_dComIfG_gameInfo.play.getTimerMode(); }
