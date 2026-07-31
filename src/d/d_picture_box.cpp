@@ -401,7 +401,7 @@ void dJle_Pb_c::zoomScale() {
         }
         else {
             f32 cameraZoomForcus = dComIfGp_getCameraZoomForcus(0);
-            mDoAud_seStart(JA_SE_TELESCOPE_ZOOM, NULL, cameraZoomForcus * 32768.0f + 0.5f);
+            mDoAud_seStart(JA_SE_TELESCOPE_ZOOM, NULL, cameraZoomForcus * 0x8000 + 0.5f);
         }
     }
 }
@@ -2416,7 +2416,7 @@ static cPhs_State dPb_Create(msg_class* i_this) {
         dComIfGp_setDoStatusForce(dActStts_TAKE_PHOTO_e);
     }
     else {
-        dComIfGp_setDoStatusForce(dComIfGp_getScopeMesgStatus());
+        dComIfGp_setDoStatusForce(dActStts_BLANK_e);
     }
 
     if (dComIfGp_getPictureStatus() == 2) {
