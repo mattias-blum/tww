@@ -263,8 +263,8 @@ public:
     /* 0x364 */ int m364;
     /* 0x368 */ f32 m368;
     /* 0x36C */ cXyz m36C;
-    /* 0x314 */ union Work {
-        struct {
+    /* 0x378 */ union Work {
+        struct Follow {
             /* 0x378 */ int m378;
             /* 0x37C */ int m37C;
             /* 0x380 */ int m380;
@@ -298,7 +298,7 @@ public:
             /* 0x3F0 */ f32 m3F0;
             /* 0x3F4 */ u8 m3F4[0x3F8 - 0x3F4];
         } follow;
-        struct {
+        struct Lockon {
             /* 0x378 */ int m378;
             /* 0x37C */ u8 m37C[0x380 - 0x37C];
             /* 0x380 */ int m380;
@@ -307,14 +307,16 @@ public:
             /* 0x38C */ u8 m38C;
             /* 0x390 */ cXyz m390;
             /* 0x39C */ u8 m39C;
-            /* 0x3A0 */ f32 m3A0;
-            /* 0x3A4 */ f32 m3A4;
+            /* 0x39D */ u8 m39D;
+            /* 0x39E */ s16 m39E;
+            /* 0x3A0 */ s32 m3A0;
+            /* 0x3A4 */ s32 m3A4;
             /* 0x3A8 */ cSGlobe m3A8;
             /* 0x3B0 */ f32 m3B0;
             /* 0x3B4 */ f32 m3B4;
             /* 0x3B8 */ f32 m3B8;
         } lockon;
-        struct {
+        struct Subject {
             /* 0x378 */ int m378;
             /* 0x37C */ u8 m37C;
             /* 0x37D */ u8 m37D;
@@ -351,6 +353,31 @@ public:
             /* 0x39A */ u8 m39A[0x39C - 0x39A];
             /* 0x39C */ int m39C;
         } crawl;
+        struct Talk {
+            /* 0x378 */ s32 m378;
+            /* 0x37C */ cXyz m37C;
+            /* 0x388 */ cXyz m388;
+            /* 0x394 */ u8 m394[0x398 - 0x394];
+            /* 0x398 */ f32 m398;
+            /* 0x39C */ u8 m39C[0x3A8 - 0x39C];
+            /* 0x3A8 */ cSGlobe m3A8;
+            /* 0x3B0 */ u8 m3B0[0x3B8 - 0x3B0];
+            /* 0x3B8 */ f32 m3B8;
+            /* 0x3BC */ s32 m3BC;
+            /* 0x3C0 */ f32 m3C0;
+            /* 0x3C4 */ f32 m3C4;
+            /* 0x3C8 */ f32 m3C8;
+            /* 0x3CC */ u8 m3CC[0x3D0 - 0x3CC];
+            /* 0x3D0 */ f32 m3D0;
+            /* 0x3D4 */ f32 m3D4;
+            /* 0x3D8 */ f32 m3D8;
+            /* 0x3DC */ f32 m3DC;
+            /* 0x3E0 */ fopAc_ac_c* m3E0;
+            /* 0x3E4 */ fopAc_ac_c* m3E4;
+            /* 0x3E8 */ fopAc_ac_c* m3E8;
+            /* 0x3EC */ s16 m3EC;
+            /* 0x3EE */ s16 m3EE;
+        } talk;
         struct FixedFrame {
             /* 0x378 */ cXyz m378;
             /* 0x384 */ cSGlobe m384;
